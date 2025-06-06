@@ -8,7 +8,7 @@ tara.jorjani@mail.utoronto.ca | jorjanit
 crystalc.huang@mail.utoronto.ca | huangcr3
 
 ## Brief description of the web application
-Our web app is a 1v1 match where players can go against another player in a 1v1 showdown of who can make the most money buying and selling a highly volatile stock in 5 minutes, which we have manually selected for that day. Whoever makes the most money at the end of the 5 minutes will be the winner of that match.
+Our web app is a 1v1 match where players can go against another player in a 1v1 showdown of who can make the most money buying and selling a highly volatile stock in 5 minutes. Whoever makes the most money at the end of the 5 minutes will be the winner of that match.
 
 ## Modern frontend framework of choice
 For our project, we will be using the Vue 3 frontend framework, using TypeScript. We will also be using TailwindCSS for a CSS framework.
