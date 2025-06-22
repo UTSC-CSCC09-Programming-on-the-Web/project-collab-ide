@@ -1,6 +1,6 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
 import fs from "fs";
 import session from "express-session";
 import bodyParser from "body-parser";
@@ -15,7 +15,9 @@ if (!fs.existsSync("uploads")) {
   fs.mkdirSync("uploads");
 }
 
-app.use(cors({ origin: `http://localhost:${FRONTEND_PORT}`, credentials: true }));
+app.use(
+  cors({ origin: `http://localhost:${FRONTEND_PORT}`, credentials: true }),
+);
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
