@@ -1,0 +1,27 @@
+# workflow adapted from prettier.yml from assignments + labs
+name: Run Prettier
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Prettier in backend
+        working-directory: backend
+        run: npm install prettier
+
+      - name: Run Prettier in backend
+        working-directory: backend
+        run: npx prettier --check .
+
+      - name: Install Prettier in frontend
+        working-directory: frontend
+        run: npm install prettier
+
+      - name: Run Prettier in frontend
+        working-directory: frontend
+        run: npx prettier --check .
