@@ -1,0 +1,30 @@
+# The following is adapted from express.yml from assignments and labs.
+name: Run Express Server
+
+on:
+  push:
+    paths:
+      - "backend/**"
+  pull_request:
+    paths:
+      - "backend/**"
+
+jobs:
+  run-server:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: npm install
+      - name: Run Express Server
+        run: node app.js &
+      - name: Sleep 2 seconds
+        run: sleep 2s
+      - name: curl index.html
+        run: "curl --request GET http://localhost:3000/ --fail"
