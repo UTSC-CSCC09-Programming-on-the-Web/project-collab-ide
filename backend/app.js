@@ -9,8 +9,8 @@ import { statusRouter } from "./routers/statusRouter.js";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT;
-const FRONTEND_PORT = process.env.FRONTEND_PORT;
+const PORT = process.env.PORT || 3000;
+const FRONTEND_PORT = process.env.FRONTEND_PORT || 8080;
 
 if (!fs.existsSync("uploads")) {
   fs.mkdirSync("uploads");
