@@ -32,7 +32,7 @@ const userStore = useUserStore();
 
 onMounted(async () => {
   try {
-    const res = await fetch(`${process.env.VUE_APP_BACKEND_URL}/api/auth/me`, {
+    const res = await fetch(`${process.env.VUE_APP_BACKEND_URL}/api/users/me`, {
       credentials: "include",
     });
 
