@@ -14,7 +14,8 @@
         Not logged in.
       </div>
       <LogoutButton v-if="userStore.user" />
-      <LoginButton v-else />
+      <!-- Login button not needed unless we have landing -->
+      <!--<LoginButton v-else />-->
     </div>
 
     <router-view />
