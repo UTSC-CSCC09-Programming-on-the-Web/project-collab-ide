@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import session from "express-session";
 import bodyParser from "body-parser";
+import { checkoutRouter } from "./routers/checkoutRouter.js";
 import cookieParser from "cookie-parser";
 import { sequelize } from "./datasource.js";
 import { statusRouter } from "./routers/statusRouter.js";
@@ -12,6 +13,7 @@ import { authRouter } from "./routers/authRouter.js";
 dotenv.config();
 
 const app = express();
+
 const PORT = process.env.PORT || 3000;
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:8080";
 
@@ -36,6 +38,7 @@ app.use(
 app.use(express.static("static"));
 app.use("/uploads", express.static("uploads"));
 
+app.use("/stripe", checkoutRouter);
 app.use("/", statusRouter);
 app.use("/api/auth", authRouter);
 
