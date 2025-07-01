@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import session from "express-session";
 import bodyParser from "body-parser";
+import { sequelize } from "./datasource.js";
 import { statusRouter } from "./routers/statusRouter.js";
 
 dotenv.config();
@@ -36,6 +37,14 @@ app.use(express.static("static"));
 app.use("/uploads", express.static("uploads"));
 
 app.use("/", statusRouter);
+
+try {
+  await sequelize.authenticate();
+  await sequelize.sync({ alter: { drop: false } });
+  console.log("Database connected.");
+} catch (e) {
+  console.error("Unable to connect:", e);
+}
 
 app.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`);
