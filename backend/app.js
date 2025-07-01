@@ -9,6 +9,7 @@ import cookieParser from "cookie-parser";
 import { sequelize } from "./datasource.js";
 import { statusRouter } from "./routers/statusRouter.js";
 import { authRouter } from "./routers/authRouter.js";
+import { userRouter } from "./routers/userRouter.js";
 
 dotenv.config();
 
@@ -41,6 +42,7 @@ app.use("/uploads", express.static("uploads"));
 app.use("/stripe", checkoutRouter);
 app.use("/", statusRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/users", userRouter);
 
 try {
   await sequelize.authenticate();
