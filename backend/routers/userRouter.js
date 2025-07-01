@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { User } from "../models/user.js";
-import { isAuthenticated } from "../middlewares/isAuthenticated.js";
+import { isAuthenticated } from "../middleware/auth.js";
 
 export const userRouter = Router();
 

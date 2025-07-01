@@ -89,3 +89,13 @@ authRouter.get("/google/callback", async (req, res) => {
       .send("An error occured during the OAuth process. Please try again :(");
   }
 });
+
+// POST /logout: clear JWT cookie and log out
+authRouter.post("/logout", (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === PROD_ENV,
+    sameSite: "lax",
+  });
+  res.status(200).json({ message: "Logged out successfully." });
+});
