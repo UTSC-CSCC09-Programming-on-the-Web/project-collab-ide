@@ -6,8 +6,6 @@ import jwt from "jsonwebtoken";
 
 export const authRouter = Router();
 
-// TODO: save new user to db
-
 // GET /google: redirect to google auth url
 authRouter.get("/google", (req, res) => {
   const params = new URLSearchParams({
