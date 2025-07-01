@@ -7,13 +7,13 @@
     </nav>
 
     <div class="absolute top-4 right-4 flex items-center space-x-4">
-      <div v-if="user" class="text-green-500 text-sm md:text-base">
-        Logged in as: {{ user.username }} ({{ user.email }})
+      <div v-if="userStore.user" class="text-green-500 text-sm md:text-base">
+        Logged in as: {{ userStore.user.username }} ({{ userStore.user.email }})
       </div>
       <div v-else class="text-gray-500 text-sm md:text-base">
         Not logged in.
       </div>
-      <LogoutButton v-if="user" />
+      <LogoutButton v-if="userStore.user" />
       <LoginButton v-else />
     </div>
 
@@ -22,11 +22,12 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from "vue";
+import { useUserStore } from "@/stores/user";
 import LogoutButton from "@/components/LogoutButton.vue";
 import LoginButton from "@/components/LoginButton.vue";
-import { ref, onMounted } from "vue";
 
-const user = ref<{ id: number; username: string; email: string } | null>(null);
+const userStore = useUserStore();
 
 onMounted(async () => {
   try {
@@ -35,13 +36,16 @@ onMounted(async () => {
     });
 
     if (res.ok) {
-      user.value = await res.json();
-      console.log("Logged in user:", user.value);
+      const userData = await res.json();
+      userStore.setUser(userData);
+      console.log("Logged in user:", userData);
     } else {
       console.error("Not logged in");
+      userStore.clearUser();
     }
   } catch (err) {
     console.error("Error fetching /me:", err);
+    userStore.clearUser();
   }
 });
 </script>

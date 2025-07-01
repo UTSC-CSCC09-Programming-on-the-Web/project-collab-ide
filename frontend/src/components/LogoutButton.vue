@@ -11,9 +11,11 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { useUserStore } from "@/stores/user";
 
 const loading = ref(false);
 const router = useRouter();
+const userStore = useUserStore();
 
 async function handleLogout() {
   loading.value = true;
@@ -22,9 +24,7 @@ async function handleLogout() {
       method: "POST",
       credentials: "include",
     });
-
-    // TODO: clear frontend usr state if we store
-
+    userStore.clearUser();
     router.push("/");
   } catch (err) {
     console.error("Failed to logout:", err);
