@@ -13,7 +13,9 @@ userRouter.get("/me", isAuthenticated, async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ error: `User with id ${userId} does not exist.` });
+      return res
+        .status(404)
+        .json({ error: `User with id ${userId} does not exist.` });
     }
 
     res.json(user);
