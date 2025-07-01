@@ -5,7 +5,7 @@ import Stripe from "stripe";
 dotenv.config();
 
 const router = express.Router();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "secret");
 
 router.post("/create-checkout-session", async (req, res) => {
   const { email } = req.body;
