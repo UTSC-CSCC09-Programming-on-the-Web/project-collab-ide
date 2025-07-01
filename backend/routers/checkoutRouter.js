@@ -21,8 +21,8 @@ router.post("/create-checkout-session", async (req, res) => {
         },
       ],
       customer_email: email,
-      success_url: `http://localhost:${process.env.FRONTEND_PORT}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `http://localhost:${process.env.FRONTEND_PORT}/cancel`,
+      success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_URL}/cancel`,
     });
 
     res.json({ url: session.url });
