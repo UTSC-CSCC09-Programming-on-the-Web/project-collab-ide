@@ -5,6 +5,7 @@ import axios from "axios";
 import jwt from "jsonwebtoken";
 
 export const authRouter = Router();
+const PROD_ENV = "production";
 
 // GET /google: redirect to google auth url
 authRouter.get("/google", (req, res) => {
@@ -75,7 +76,7 @@ authRouter.get("/google/callback", async (req, res) => {
 
     res.cookie("token", jwtToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === PROD_ENV,
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -120,4 +121,14 @@ authRouter.get("/me", async (req, res) => {
     console.error("Error in /me:", err);
     res.status(500).json({ error: "Internal server error." });
   }
+});
+
+// POST /logout: clear JWT cookie and log out
+authRouter.post("/logout", (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === PROD_ENV,
+    sameSite: "lax",
+  });
+  res.status(200).json({ message: "Logged out successfully." });
 });
