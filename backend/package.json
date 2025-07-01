@@ -23,6 +23,7 @@
     "jsonwebtoken": "^9.0.2",
     "stripe": "^18.2.1",
     "pg": "^8.16.2",
+    "pinia": "^3.0.3",
     "prettier": "^3.6.1",
     "sequelize": "^6.37.7"
   },

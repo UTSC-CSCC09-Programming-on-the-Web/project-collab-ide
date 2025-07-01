@@ -5,6 +5,7 @@ import axios from "axios";
 import jwt from "jsonwebtoken";
 
 export const authRouter = Router();
+const PROD_ENV = "production";
 
 // GET /google: redirect to google auth url
 authRouter.get("/google", (req, res) => {
@@ -75,7 +76,7 @@ authRouter.get("/google/callback", async (req, res) => {
 
     res.cookie("token", jwtToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === PROD_ENV,
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
