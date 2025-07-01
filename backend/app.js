@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import session from "express-session";
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 import { sequelize } from "./datasource.js";
 import { statusRouter } from "./routers/statusRouter.js";
 import { authRouter } from "./routers/authRouter.js";
@@ -12,18 +13,17 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const FRONTEND_PORT = process.env.FRONTEND_PORT || 8080;
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:8080";
 
 if (!fs.existsSync("uploads")) {
   fs.mkdirSync("uploads");
 }
 
-app.use(
-  cors({ origin: `http://localhost:${FRONTEND_PORT}`, credentials: true }),
-);
+app.use(cors({ origin: `${FRONTEND_URL}`, credentials: true }));
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 app.use(
   session({
