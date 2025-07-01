@@ -6,6 +6,7 @@ import session from "express-session";
 import bodyParser from "body-parser";
 import { sequelize } from "./datasource.js";
 import { statusRouter } from "./routers/statusRouter.js";
+import { authRouter } from "./routers/authRouter.js";
 
 dotenv.config();
 
@@ -24,7 +25,6 @@ app.use(
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// TODO: Will remove express session
 app.use(
   session({
     secret: process.env.SECRET_KEY || "secret",
@@ -37,6 +37,7 @@ app.use(express.static("static"));
 app.use("/uploads", express.static("uploads"));
 
 app.use("/", statusRouter);
+app.use("/api/auth", authRouter);
 
 try {
   await sequelize.authenticate();
