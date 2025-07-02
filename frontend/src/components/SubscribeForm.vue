@@ -23,7 +23,7 @@ const handleSubscribe = async () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.value }),
-      }
+      },
     );
 
     const data = await response.json();
