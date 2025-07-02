@@ -42,7 +42,7 @@ export default defineComponent({
         await axios.post(
           `${process.env.VUE_APP_BACKEND_URL}/api/queue/join`,
           {},
-          { withCredentials: true },
+          { withCredentials: true }
         );
         this.inQueue = true;
         this.startPolling();
@@ -55,7 +55,7 @@ export default defineComponent({
         await axios.post(
           `${process.env.VUE_APP_BACKEND_URL}/api/queue/leave`,
           {},
-          { withCredentials: true },
+          { withCredentials: true }
         );
         this.inQueue = false;
         if (this.pollInterval) clearInterval(this.pollInterval);
@@ -67,7 +67,7 @@ export default defineComponent({
       try {
         const res = await axios.get(
           `${process.env.VUE_APP_BACKEND_URL}/api/match/status`,
-          { withCredentials: true },
+          { withCredentials: true }
         );
         if (res.data.matchId) {
           this.matchId = res.data.matchId;
