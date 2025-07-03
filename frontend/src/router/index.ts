@@ -1,11 +1,23 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import HomeView from "../views/HomeView.vue";
+import LandingView from "../views/LandingView.vue";
+import LoginView from "../views/LoginView.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
+    name: "landing",
+    component: LandingView,
+  },
+  {
+    path: "/home",
     name: "home",
     component: HomeView,
+  },
+  {
+    path: "/login",
+    name: "login",
+    component: LoginView,
   },
   {
     path: "/subscription",
@@ -17,18 +29,6 @@ const routes: Array<RouteRecordRaw> = [
       import(
         /* webpackChunkName: "subscription" */ "../views/SubscriptionView.vue"
       ),
-  },
-  {
-    path: "/login",
-    name: "login",
-    component: () =>
-      import(/* webpackChunkName: "login" */ "../views/LoginView.vue"),
-  },
-  {
-    path: "/landing",
-    name: "landing",
-    component: () =>
-      import(/* webpackChunkName: "landing" */ "../views/LandingView.vue"),
   },
 ];
 
