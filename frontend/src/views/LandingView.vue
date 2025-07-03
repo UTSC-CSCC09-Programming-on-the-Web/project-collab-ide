@@ -11,11 +11,17 @@
 
 <script setup>
 import { useRouter } from "vue-router";
+import { useUserStore } from "@/stores/user";
 
+const userStore = useUserStore();
 const router = useRouter();
 
 const start = () => {
-  router.push("/login");
+  if (userStore.user) {
+    router.push("/home");
+  } else {
+    router.push("/login");
+  }
 };
 </script>
 
