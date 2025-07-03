@@ -81,7 +81,7 @@ authRouter.get("/google/callback", async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.redirect(`${process.env.FRONTEND_URL}`);
+    res.redirect(`${process.env.FRONTEND_URL}/home`);
   } catch (err) {
     console.error(err.response?.data || err);
     res

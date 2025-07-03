@@ -1,7 +1,9 @@
 <template>
   <div class="relative min-h-screen">
+    <!-- Nav here for testing until flow is fully set up. -->
     <nav class="p-4">
-      <router-link to="/">Home</router-link> |
+      <router-link to="/">Landing</router-link> |
+      <router-link to="/home">Home</router-link> |
       <router-link to="/subscription">Subscription</router-link> |
       <router-link to="/login">Login</router-link>
     </nav>
