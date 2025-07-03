@@ -1,15 +1,26 @@
 <template>
-  <div class="landing">
-    <img src="@/assets/logo.png" alt="Stock Showdown Logo" class="logo" />
-    <p class="description">
+  <div
+    class="flex flex-col items-center justify-start min-h-screen pt-24 px-4 text-center bg-gray-50"
+  >
+    <img
+      src="@/assets/logo.png"
+      alt="Stock Showdown Logo"
+      class="max-w-[40%] mb-10"
+    />
+    <p class="description max-w-xl mb-10 text-lg md:text-xl">
       Compete against other players in a 1v1 showdown to see how much money you
       can make with a volatile stock in 5 minutes.
     </p>
-    <button class="start-button" @click="start">GET STARTED</button>
+    <button
+      @click="start"
+      class="start-button bg-red-700 hover:bg-red-800 text-white py-3 px-8 rounded shadow-md"
+    >
+      GET STARTED
+    </button>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/user";
 
@@ -26,46 +37,17 @@ const start = () => {
 </script>
 
 <style scoped>
-.landing {
-  margin-top: 100px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  height: 90vh;
-  text-align: center;
-  padding: 2rem 1rem 1rem;
-}
-
-.logo {
-  max-width: 40%;
-  height: auto;
-  margin-bottom: 2.5rem;
-}
-
 .description {
-  max-width: 700px;
-  margin-bottom: 2.5rem;
-  font-size: 1.2rem;
   font-family: "Roboto Condensed", sans-serif;
   font-weight: 400;
 }
 
 .start-button {
-  background-color: #b71c1c;
-  color: white;
-  border: none;
-  padding: 0.75rem 2rem;
-  font-size: 1rem;
   font-family: "Roboto Condensed", sans-serif;
-  border-radius: 0.5rem;
-  cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .start-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
 }
 </style>
