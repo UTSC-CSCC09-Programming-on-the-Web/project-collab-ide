@@ -54,9 +54,12 @@ const start = () => {
   font-family: "Roboto Condensed", sans-serif;
   border-radius: 0.5rem;
   cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .start-button:hover {
-  background-color: #a01717;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
 }
 </style>
