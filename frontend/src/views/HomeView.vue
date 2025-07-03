@@ -1,5 +1,10 @@
 <template>
   <div class="home">
+    <ErrorToast
+      v-if="isError"
+      :message="errorMessage"
+      @close="isError = false"
+    />
     <div class="text-red-500 text-3xl font-bold">Find a Match</div>
     <button
       @click="joinQueue"
@@ -26,18 +31,25 @@
 <script lang="ts">
 import axios from "axios";
 import { defineComponent } from "vue";
+import ErrorToast from "@/components/ErrorToast.vue";
 
 export default defineComponent({
+  components: {
+    ErrorToast,
+  },
   data() {
     return {
       inQueue: false as boolean,
       matchId: null as number | null,
       userId: 123 as number,
       pollInterval: null as ReturnType<typeof setInterval> | null,
+      isError: false as boolean,
+      errorMessage: "" as string,
     };
   },
   methods: {
     async joinQueue() {
+      this.isError = false;
       try {
         await axios.post(
           `${process.env.VUE_APP_BACKEND_URL}/api/queue/join`,
@@ -47,6 +59,11 @@ export default defineComponent({
         this.inQueue = true;
         this.startPolling();
       } catch (err: any) {
+        this.isError = true;
+        this.errorMessage =
+          err.response?.data?.error ||
+          err?.message ||
+          "An unexpected error occurred.";
         console.error(err.response?.data || err.message);
       }
     },
