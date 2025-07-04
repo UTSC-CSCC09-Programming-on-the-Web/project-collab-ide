@@ -18,5 +18,5 @@ export const User = sequelize.define("User", {
   isSubscribed: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
-  }
+  },
 });
