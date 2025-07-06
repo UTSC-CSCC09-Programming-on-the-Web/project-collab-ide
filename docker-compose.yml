@@ -17,6 +17,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    command: >
+      sh -c "python3 seed_data/seed_postgres.py && npm run start"
 
   postgres:
     image: postgres:15
