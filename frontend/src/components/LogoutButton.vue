@@ -1,8 +1,8 @@
 <template>
   <button
-    @click="handleLogout"
     class="w-24 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded transition disabled:opacity-50"
     :disabled="loading"
+    @click="handleLogout"
   >
     {{ loading ? "Logging out..." : "Logout" }}
   </button>

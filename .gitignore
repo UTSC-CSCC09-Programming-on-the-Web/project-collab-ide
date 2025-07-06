@@ -1,3 +1,5 @@
 backend/.env
 .env
 .DS_Store
+backend/seed_data/poly_batch_fetcher.py
+/backend/seed_data/scripts
