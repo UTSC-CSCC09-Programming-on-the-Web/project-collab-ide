@@ -12,8 +12,8 @@
       can make with a volatile stock in 5 minutes.
     </p>
     <button
-      @click="start"
       class="start-button bg-red-700 hover:bg-red-800 text-white py-3 px-8 rounded shadow-md"
+      @click="start"
     >
       GET STARTED
     </button>

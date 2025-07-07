@@ -1,5 +1,11 @@
 <template>
   <div class="home">
+    <button
+      class="w-full mt-2 p-2 rounded bg-purple-500 text-white"
+      @click="getMarketData"
+    >
+      Test: Console Log Market Data
+    </button>
     <ErrorToast
       v-if="isError"
       :message="errorMessage"
@@ -7,17 +13,17 @@
     />
     <div class="text-red-500 text-3xl font-bold">Find a Match</div>
     <button
-      @click="joinQueue"
       class="w-full p-2 rounded bg-blue-500 text-white"
       :disabled="inQueue"
+      @click="joinQueue"
     >
       {{ inQueue ? "Waiting for Match..." : "Join Queue" }}
     </button>
 
     <button
       v-if="inQueue"
-      @click="leaveQueue"
       class="w-full mt-2 p-2 rounded bg-red-500 text-white"
+      @click="leaveQueue"
     >
       Cancel
     </button>
@@ -46,6 +52,9 @@ export default defineComponent({
       isError: false as boolean,
       errorMessage: "" as string,
     };
+  },
+  beforeUnmount() {
+    if (this.pollInterval) clearInterval(this.pollInterval);
   },
   methods: {
     async joinQueue() {
@@ -98,9 +107,25 @@ export default defineComponent({
     startPolling() {
       this.pollInterval = setInterval(this.checkMatchStatus, 3000);
     },
-  },
-  beforeUnmount() {
-    if (this.pollInterval) clearInterval(this.pollInterval);
+    async getMarketData() {
+      try {
+        const res = await axios.get(
+          `${process.env.VUE_APP_BACKEND_URL}/api/market/candles`,
+          {
+            params: {
+              ticker: "AAPL",
+              date: "2023-08-02", // get valid dates from endpoint /api/market/dates
+              page: 0,
+              limit: 1,
+            },
+            withCredentials: true,
+          }
+        );
+        console.log("Market Candle Data:", res.data);
+      } catch (err: any) {
+        console.error(err.response?.data || err.message);
+      }
+    },
   },
 });
 </script>

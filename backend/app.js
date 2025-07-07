@@ -12,6 +12,7 @@ import { authRouter } from "./routers/authRouter.js";
 import { userRouter } from "./routers/userRouter.js";
 import { queueRouter } from "./routers/queueRouter.js";
 import { matchRouter } from "./routers/matchRouter.js";
+import { marketRouter } from "./routers/marketRouter.js";
 
 dotenv.config();
 
@@ -47,6 +48,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
 app.use("/api/queue", queueRouter);
 app.use("/api/match", matchRouter);
+app.use("/api/market", marketRouter);
 
 try {
   await sequelize.authenticate();
