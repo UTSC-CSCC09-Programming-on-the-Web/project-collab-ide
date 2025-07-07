@@ -29,7 +29,7 @@ services:
       postgres:
         condition: service_healthy
     command: >
-      sh -c "python3 seed_data/seed_postgres.py && npm run start"
+      sh -c "python3 seed_data/seed_postgres.py && npm run dev"
 
   postgres:
     image: postgres:15
