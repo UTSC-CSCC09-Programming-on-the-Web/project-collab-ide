@@ -91,7 +91,7 @@ marketRouter.get("/candles", async (req, res) => {
       limit,
       offset,
     });
-    res.json({total: candles.length, candles: candles});
+    res.json({ total: candles.length, candles: candles });
   } catch (err) {
     console.error("[ERROR] /api/market/candles", err);
     res.status(500).json({ error: "Internal server error." });
