@@ -41,7 +41,7 @@ marketRouter.get("/dates", async (req, res) => {
 
     const dateList = dates.map((d) => d.date);
 
-    res.json({ dates: dateList });
+    res.json({ total: dateList.length, dates: dateList });
   } catch (err) {
     console.error("[ERROR] /api/market/dates", err);
     res.status(500).json({ error: "Failed to fetch market dates." });
@@ -59,7 +59,7 @@ marketRouter.get("/stocks", async (req, res) => {
 
     const tickerList = tickers.map((t) => t.ticker);
 
-    res.json({ stocks: tickerList });
+    res.json({ total: tickerList.length, stocks: tickerList });
   } catch (err) {
     console.error("[ERROR] /api/market/stocks", err);
     res.status(500).json({ error: "Failed to fetch market stocks." });
@@ -91,7 +91,7 @@ marketRouter.get("/candles", async (req, res) => {
       limit,
       offset,
     });
-    res.json(candles);
+    res.json({total: candles.length, candles: candles});
   } catch (err) {
     console.error("[ERROR] /api/market/candles", err);
     res.status(500).json({ error: "Internal server error." });
