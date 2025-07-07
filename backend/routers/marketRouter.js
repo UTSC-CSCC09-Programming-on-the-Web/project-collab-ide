@@ -48,6 +48,24 @@ marketRouter.get("/dates", async (req, res) => {
   }
 });
 
+// GET /api/market/stocks
+marketRouter.get("/stocks", async (req, res) => {
+  try {
+    const tickers = await MarketCandle.findAll({
+      attributes: ["ticker"],
+      group: ["ticker"],
+      order: [["ticker", "DESC"]],
+    });
+
+    const tickerList = tickers.map((t) => t.ticker);
+
+    res.json({ stocks: tickerList });
+  } catch (err) {
+    console.error("[ERROR] /api/market/stocks", err);
+    res.status(500).json({ error: "Failed to fetch market stocks." });
+  }
+});
+
 // GET /api/market/candles?ticker=AAPL&date=YYYY-MM-DD&page=0&limit=60 (paginated)
 marketRouter.get("/candles", async (req, res) => {
   const { ticker, date } = req.query;
