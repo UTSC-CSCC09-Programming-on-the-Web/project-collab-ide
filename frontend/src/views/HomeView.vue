@@ -7,9 +7,13 @@
       >
         Test: Simulate updating stock display!
       </button>
-      <StockDisplay exchange="NASDAQ" ticker="AAPL" // set appropriate ticker
-      :price="currentPrice" :change="priceChange"
-      :percent-change="percentChange" />
+      <StockDisplay
+        exchange="NASDAQ"
+        ticker="AAPL"
+        :price="currentPrice"
+        :change="priceChange"
+        :percent-change="percentChange"
+      />
     </div>
     <ErrorToast
       v-if="isError"
