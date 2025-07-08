@@ -1,9 +1,9 @@
 <template>
   <button
-    @click="handleSubscribe"
     type="submit"
     class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
     :disabled="loading"
+    @click="handleSubscribe"
   >
     {{ loading ? "Loading checkout page..." : "Continue to payment" }}
   </button>

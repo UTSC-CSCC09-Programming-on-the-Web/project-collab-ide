@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-const props = withDefaults(
+withDefaults(
   defineProps<{
     exchange?: string;
     ticker: string;
@@ -40,7 +40,7 @@ const props = withDefaults(
     percentChange: number;
   }>(),
   {
-    exchange: "NASDAQ", // default, i think all our companies are in nasdaq
+    exchange: "NASDAQ", // default
   }
 );
 </script>

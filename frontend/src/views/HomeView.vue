@@ -12,7 +12,7 @@
         ticker="GOOG"
         :price="currentPrice"
         :change="priceChange"
-        :percentChange="percentChange"
+        :percent-change="percentChange"
       />
     </div>
     <ErrorToast
@@ -65,7 +65,7 @@ export default defineComponent({
       currentPrice: 179.76, // state for cur price
       priceChange: 2.85, // state for price change
       percentChange: 1.61, // state for perc change
-      stockData: [] as any[], // store the fetched data
+      stockData: [] as Candle[], // store the fetched data
       tickInterval: null as ReturnType<typeof setInterval> | null, // for demo- for game we might want to tick from backend
     };
   },
@@ -146,8 +146,10 @@ export default defineComponent({
         let index = 0;
         this.tickInterval = setInterval(() => {
           if (index >= this.stockData.length) {
-            clearInterval(this.tickInterval!);
-            this.tickInterval = null;
+            if (this.tickInterval !== null) {
+              clearInterval(this.tickInterval);
+              this.tickInterval = null;
+            }
             return;
           }
           const candle = this.stockData[index];
@@ -164,4 +166,13 @@ export default defineComponent({
     },
   },
 });
+
+type Candle = {
+  timestamp: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume?: number;
+};
 </script>
