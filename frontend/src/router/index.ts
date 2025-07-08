@@ -2,6 +2,7 @@ import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import LandingView from "../views/LandingView.vue";
 import LoginView from "../views/LoginView.vue";
+import MatchView from "../views/MatchView.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -29,6 +30,11 @@ const routes: Array<RouteRecordRaw> = [
       import(
         /* webpackChunkName: "subscription" */ "../views/SubscriptionView.vue"
       ),
+  },
+  {
+    path: "/match/:id",
+    name: "MatchPage",
+    component: MatchView,
   },
 ];
 

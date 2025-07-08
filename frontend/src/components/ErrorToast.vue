@@ -15,6 +15,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 
+// eslint-disable-next-line no-undef
 const props = defineProps<{
   message: string;
   duration?: number; // in ms

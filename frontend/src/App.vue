@@ -1,20 +1,26 @@
 <template>
+  <head>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap"
+      rel="stylesheet"
+    />
+  </head>
   <div class="relative min-h-screen">
     <!-- Nav here for testing until flow is fully set up. -->
-    <nav class="p-4">
+    <!-- <nav class="p-4">
       <router-link to="/">Landing</router-link> |
       <router-link to="/home">Home</router-link> |
       <router-link to="/subscription">Subscription</router-link> |
       <router-link to="/login">Login</router-link>
-    </nav>
+    </nav> -->
 
     <div class="absolute top-4 right-4 flex items-center space-x-4">
-      <div v-if="userStore.user" class="text-green-500 text-sm md:text-base">
+      <!-- <div v-if="userStore.user" class="text-green-500 text-sm md:text-base">
         Logged in as: {{ userStore.user.username }} ({{ userStore.user.email }})
       </div>
       <div v-else class="text-gray-500 text-sm md:text-base">
         Not logged in.
-      </div>
+      </div> -->
       <LogoutButton v-if="userStore.user" />
     </div>
 
@@ -52,7 +58,7 @@ onMounted(async () => {
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Roboto Condensed", "Bebas Neue" sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
