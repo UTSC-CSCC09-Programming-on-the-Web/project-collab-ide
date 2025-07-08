@@ -16,8 +16,6 @@
         Not logged in.
       </div>
       <LogoutButton v-if="userStore.user" />
-      <!-- Login button not needed unless we have landing -->
-      <!--<LoginButton v-else />-->
     </div>
 
     <router-view />
@@ -28,7 +26,6 @@
 import { onMounted } from "vue";
 import { useUserStore } from "@/stores/user";
 import LogoutButton from "@/components/LogoutButton.vue";
-import LoginButton from "@/components/LoginButton.vue";
 
 const userStore = useUserStore();
 
