@@ -1,11 +1,20 @@
 <template>
   <div class="home">
-    <button
-      class="w-full mt-2 p-2 rounded bg-purple-500 text-white"
-      @click="getMarketData"
-    >
-      Test: Console Log Market Data
-    </button>
+    <div class="stock-display-demo justify-items-center mb-2">
+      <button
+        class="w-full mt-2 p-2 mb-4 rounded bg-purple-500 text-white"
+        @click="getMarketData"
+      >
+        Test: Simulate updating stock display!
+      </button>
+      <StockDisplay
+        exchange="NASDAQ"
+        ticker="GOOG"
+        :price="currentPrice"
+        :change="priceChange"
+        :percentChange="percentChange"
+      />
+    </div>
     <ErrorToast
       v-if="isError"
       :message="errorMessage"
@@ -38,10 +47,12 @@
 import axios from "axios";
 import { defineComponent } from "vue";
 import ErrorToast from "@/components/ErrorToast.vue";
+import StockDisplay from "@/components/StockDisplay.vue";
 
 export default defineComponent({
   components: {
     ErrorToast,
+    StockDisplay,
   },
   data() {
     return {
@@ -51,10 +62,16 @@ export default defineComponent({
       pollInterval: null as ReturnType<typeof setInterval> | null,
       isError: false as boolean,
       errorMessage: "" as string,
+      currentPrice: 179.76, // state for cur price
+      priceChange: 2.85, // state for price change
+      percentChange: 1.61, // state for perc change
+      stockData: [] as any[], // store the fetched data
+      tickInterval: null as ReturnType<typeof setInterval> | null, // for demo- for game we might want to tick from backend
     };
   },
   beforeUnmount() {
     if (this.pollInterval) clearInterval(this.pollInterval);
+    if (this.tickInterval) clearInterval(this.tickInterval);
   },
   methods: {
     async joinQueue() {
@@ -114,14 +131,33 @@ export default defineComponent({
           {
             params: {
               ticker: "AAPL",
-              date: "2023-08-02", // get valid dates from endpoint /api/market/dates
+              date: "2023-08-02",
               page: 0,
-              limit: 1,
+              limit: 60, // fetch 60 candles for simulation
             },
             withCredentials: true,
           }
         );
         console.log("Market Candle Data:", res.data);
+        this.stockData = res.data.candles;
+
+        if (this.tickInterval) clearInterval(this.tickInterval);
+
+        let index = 0;
+        this.tickInterval = setInterval(() => {
+          if (index >= this.stockData.length) {
+            clearInterval(this.tickInterval!);
+            this.tickInterval = null;
+            return;
+          }
+          const candle = this.stockData[index];
+          const newPrice = candle.close;
+          const oldPrice = this.currentPrice;
+          this.currentPrice = newPrice;
+          this.priceChange = newPrice - oldPrice;
+          this.percentChange = ((newPrice - oldPrice) / oldPrice) * 100;
+          index++;
+        }, 1000); // update every second
       } catch (err: any) {
         console.error(err.response?.data || err.message);
       }
