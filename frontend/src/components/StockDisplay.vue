@@ -31,7 +31,9 @@
 </template>
 
 <script setup lang="ts">
+// eslint-disable-next-line no-undef
 withDefaults(
+  // eslint-disable-next-line no-undef
   defineProps<{
     exchange?: string;
     ticker: string;

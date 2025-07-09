@@ -1,10 +1,10 @@
 <template>
   <button
-    class="w-24 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded transition disabled:opacity-50"
+    class="logout-btn w-40 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition disabled:opacity-50"
     :disabled="loading"
     @click="handleLogout"
   >
-    {{ loading ? "Logging out..." : "Logout" }}
+    {{ loading ? "Logging out..." : "LOGOUT" }}
   </button>
 </template>
 
@@ -33,3 +33,17 @@ async function handleLogout() {
   }
 }
 </script>
+
+<style scoped>
+.logout-btn {
+  font-family: "Roboto Condensed", sans-serif;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.logout-btn:hover {
+  transform: translateY(-2px);
+}
+.logout-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+</style>
