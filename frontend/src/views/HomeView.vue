@@ -2,7 +2,9 @@
   <div class="home">
     <div class="absolute top-4 right-4 flex items-center space-x-4">
       <LogoutButton v-if="userStore.user" />
+      <UnsubscribeButton v-if="userStore.user" />
     </div>
+
     <h1 class="user-txt text-black mb-4">
       HEY,
       <span class="text-[#197442]">{{
@@ -55,11 +57,14 @@ import { defineComponent } from "vue";
 import { useUserStore } from "@/stores/user";
 import ErrorToast from "@/components/ErrorToast.vue";
 import LogoutButton from "@/components/LogoutButton.vue";
+import UnsubscribeButton from "@/components/UnsubscribeButton.vue";
+
 import { useRouter } from "vue-router";
 
 export default defineComponent({
   components: {
     LogoutButton,
+    UnsubscribeButton,
     ErrorToast,
   },
   data() {
