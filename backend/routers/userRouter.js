@@ -24,3 +24,25 @@ userRouter.get("/me", isAuthenticated, async (req, res) => {
     res.status(500).json({ error: "Internal server error." });
   }
 });
+
+// POST /users/unsubscribe
+userRouter.post("/unsubscribe", isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findByPk(userId);
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ error: `User with id ${userId} does not exist.` });
+    }
+
+    user.isSubscribed = false;
+    await user.save();
+
+    res.status(200).json({ message: "Unsubscribed and updated user status." });
+  } catch (err) {
+    console.error("Error in POST users/unsubscribe:", err);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});

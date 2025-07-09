@@ -6,6 +6,9 @@
         userStore.$state.user?.username.toLocaleUpperCase()
       }}</span>
     </h1>
+
+    <UnsubscribeButton class="mb-6" />
+
     <div class="stock-display-demo justify-items-center mb-2">
       <button
         class="w-full mt-2 p-2 mb-4 rounded bg-purple-500 text-white"
@@ -67,11 +70,13 @@ import { defineComponent } from "vue";
 import { useUserStore } from "@/stores/user";
 import ErrorToast from "@/components/ErrorToast.vue";
 import StockDisplay from "@/components/StockDisplay.vue";
+import UnsubscribeButton from "@/components/UnsubscribeButton.vue";
 
 export default defineComponent({
   components: {
     ErrorToast,
     StockDisplay,
+    UnsubscribeButton,
   },
   data() {
     return {
