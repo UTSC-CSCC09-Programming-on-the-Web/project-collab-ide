@@ -3,6 +3,7 @@ import HomeView from "../views/HomeView.vue";
 import LandingView from "../views/LandingView.vue";
 import LoginView from "../views/LoginView.vue";
 import MatchView from "../views/MatchView.vue";
+import SubscribeView from "../views/SubscriptionView.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -23,13 +24,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/subscription",
     name: "subscription",
-    // route level code-splitting
-    // this generates a separate chunk (subscription.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () =>
-      import(
-        /* webpackChunkName: "subscription" */ "../views/SubscriptionView.vue"
-      ),
+    component: SubscribeView,
   },
   {
     path: "/match/:id",
