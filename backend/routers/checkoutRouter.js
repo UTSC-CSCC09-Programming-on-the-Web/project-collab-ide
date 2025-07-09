@@ -11,6 +11,16 @@ router.post("/create-checkout-session", async (req, res) => {
   const { email } = req.body;
 
   try {
+
+    // If user exists, update subscription status
+    const user = await User.findOne({ where: { email } });
+    if (user) {
+      user.isSubscribed = true;
+      await user.save();
+    } else {
+      return res.status(404).json({ error: "User not found" });
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
@@ -21,8 +31,7 @@ router.post("/create-checkout-session", async (req, res) => {
         },
       ],
       customer_email: email,
-      success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_URL}/cancel`,
+      success_url: `${process.env.FRONTEND_URL}/home`,
     });
 
     res.json({ url: session.url });
