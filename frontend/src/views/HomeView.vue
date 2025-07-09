@@ -1,26 +1,14 @@
 <template>
   <div class="home">
+    <div class="absolute top-4 right-4 flex items-center space-x-4">
+      <LogoutButton v-if="userStore.user" />
+    </div>
     <h1 class="user-txt text-black mb-4">
       HEY,
       <span class="text-[#197442]">{{
         userStore.$state.user?.username.toLocaleUpperCase()
       }}</span>
     </h1>
-    <div class="stock-display-demo justify-items-center mb-2">
-      <button
-        class="w-full mt-2 p-2 mb-4 rounded bg-purple-500 text-white"
-        @click="getMarketData"
-      >
-        Test: Simulate updating stock display!
-      </button>
-      <StockDisplay
-        exchange="NASDAQ"
-        ticker="AAPL"
-        :price="currentPrice"
-        :change="priceChange"
-        :percent-change="percentChange"
-      />
-    </div>
     <ErrorToast
       v-if="isError"
       :message="errorMessage"
@@ -66,12 +54,13 @@ import axios from "axios";
 import { defineComponent } from "vue";
 import { useUserStore } from "@/stores/user";
 import ErrorToast from "@/components/ErrorToast.vue";
-import StockDisplay from "@/components/StockDisplay.vue";
+import LogoutButton from "@/components/LogoutButton.vue";
+import { useRouter } from "vue-router";
 
 export default defineComponent({
   components: {
+    LogoutButton,
     ErrorToast,
-    StockDisplay,
   },
   data() {
     return {
@@ -82,16 +71,8 @@ export default defineComponent({
       pollInterval: null as ReturnType<typeof setInterval> | null,
       isError: false as boolean,
       errorMessage: "" as string,
-      currentPrice: 179.76, // state for cur price
-      priceChange: 2.85, // state for price change
-      percentChange: 1.61, // state for perc change
-      stockData: [] as Candle[], // store the fetched data
-      tickInterval: null as ReturnType<typeof setInterval> | null, // for demo- for game we might want to tick from backend
+      router: useRouter(),
     };
-  },
-  beforeUnmount() {
-    if (this.pollInterval) clearInterval(this.pollInterval);
-    if (this.tickInterval) clearInterval(this.tickInterval);
   },
   methods: {
     async joinQueue() {
@@ -137,7 +118,7 @@ export default defineComponent({
           if (this.pollInterval) clearInterval(this.pollInterval);
 
           setTimeout(() => {
-            this.$router.push({
+            this.router.push({
               name: "MatchPage",
               params: { id: this.matchId },
             });
@@ -150,57 +131,8 @@ export default defineComponent({
     startPolling() {
       this.pollInterval = setInterval(this.checkMatchStatus, 3000);
     },
-    async getMarketData() {
-      try {
-        const res = await axios.get(
-          `${process.env.VUE_APP_BACKEND_URL}/api/market/candles`,
-          {
-            params: {
-              ticker: "AAPL",
-              date: "2023-08-02",
-              page: 0,
-              limit: 60, // fetch 60 candles for simulation
-            },
-            withCredentials: true,
-          }
-        );
-        console.log("Market Candle Data:", res.data);
-        this.stockData = res.data.candles;
-
-        if (this.tickInterval) clearInterval(this.tickInterval);
-
-        let index = 0;
-        this.tickInterval = setInterval(() => {
-          if (index >= this.stockData.length) {
-            if (this.tickInterval !== null) {
-              clearInterval(this.tickInterval);
-              this.tickInterval = null;
-            }
-            return;
-          }
-          const candle = this.stockData[index];
-          const newPrice = candle.close;
-          const oldPrice = this.currentPrice;
-          this.currentPrice = newPrice;
-          this.priceChange = newPrice - oldPrice;
-          this.percentChange = ((newPrice - oldPrice) / oldPrice) * 100;
-          index++;
-        }, 1000); // update every second
-      } catch (err: any) {
-        console.error(err.response?.data || err.message);
-      }
-    },
   },
 });
-
-type Candle = {
-  timestamp: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume?: number;
-};
 </script>
 
 <style scoped>

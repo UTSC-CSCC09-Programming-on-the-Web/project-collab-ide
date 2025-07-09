@@ -21,7 +21,6 @@
       <div v-else class="text-gray-500 text-sm md:text-base">
         Not logged in.
       </div> -->
-      <LogoutButton v-if="userStore.user" />
     </div>
 
     <router-view />
@@ -31,7 +30,6 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { useUserStore } from "@/stores/user";
-import LogoutButton from "@/components/LogoutButton.vue";
 
 const userStore = useUserStore();
 
@@ -58,7 +56,7 @@ onMounted(async () => {
 
 <style>
 #app {
-  font-family: "Roboto Condensed", "Bebas Neue" sans-serif;
+  font-family: "Roboto Condensed", "Bebas Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
