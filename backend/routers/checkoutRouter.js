@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import Stripe from "stripe";
+import { User } from "../models/user.js";
 
 dotenv.config();
 
@@ -11,7 +12,6 @@ router.post("/create-checkout-session", async (req, res) => {
   const { email } = req.body;
 
   try {
-
     // If user exists, update subscription status
     const user = await User.findOne({ where: { email } });
     if (user) {
