@@ -51,8 +51,8 @@ const sessionMiddleware = session({
 app.use(sessionMiddleware);
 
 io.use((socket, next) => {
-    // need to decode jwt
-    // TODO: move socket stuff to new file?
+  // need to decode jwt
+  // TODO: move socket stuff to new file?
   sessionMiddleware(socket.request, {}, () => {
     const cookieHeader = socket.request.headers.cookie || "";
     const cookies = Object.fromEntries(
