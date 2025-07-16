@@ -14,9 +14,19 @@ import { queueRouter } from "./routers/queueRouter.js";
 import { matchRouter } from "./routers/matchRouter.js";
 import { marketRouter } from "./routers/marketRouter.js";
 
+import http from "http";
+import { Server } from "socket.io";
+
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    credentials: true,
+  },
+});
 
 const PORT = process.env.PORT || 3000;
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:8080";
@@ -26,18 +36,22 @@ if (!fs.existsSync("uploads")) {
 }
 
 app.use(cors({ origin: `${FRONTEND_URL}`, credentials: true }));
-
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-app.use(
-  session({
-    secret: process.env.SECRET_KEY || "secret",
-    resave: false,
-    saveUninitialized: true,
-  }),
-);
+// TODO: check for mising secret key and remove the default secret (they remove marks :c)
+const sessionMiddleware = session({
+  secret: process.env.SECRET_KEY || "secret",
+  resave: false,
+  saveUninitialized: true,
+});
+
+app.use(sessionMiddleware);
+
+io.use((socket, next) => {
+  sessionMiddleware(socket.request, {}, next);
+});
 
 app.use(express.static("static"));
 app.use("/uploads", express.static("uploads"));
@@ -50,6 +64,30 @@ app.use("/api/queue", queueRouter);
 app.use("/api/match", matchRouter);
 app.use("/api/market", marketRouter);
 
+io.on("connection", (socket) => {
+  const userId = socket.request?.session?.userId;
+  if (!userId) {
+    console.log("unauthorized socket connection");
+    return socket.disconnect();
+  }
+
+  console.log(`[Socket] User ${userId} connected.`);
+
+  socket.on("join-match", (matchId) => {
+    const room = `match-${matchId}`;
+    socket.join(room);
+    console.log(`[Socket] User ${userId} joined room ${room}.`);
+  });
+
+  socket.on("buy", ({ matchId, amount }) => {
+    io.to(`match-${matchId}`).emit("buy-event", { userId, amount });
+  });
+
+  socket.on("sell", ({ matchId, amount }) => {
+    io.to(`match-${matchId}`).emit("sell-event", { userId, amount });
+  });
+});
+
 try {
   await sequelize.authenticate();
   await sequelize.sync({ alter: { drop: false } });
@@ -58,6 +96,6 @@ try {
   console.error("Unable to connect:", e);
 }
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`);
 });
