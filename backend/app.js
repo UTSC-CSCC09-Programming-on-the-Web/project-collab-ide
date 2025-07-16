@@ -13,6 +13,7 @@ import { userRouter } from "./routers/userRouter.js";
 import { queueRouter } from "./routers/queueRouter.js";
 import { matchRouter } from "./routers/matchRouter.js";
 import { marketRouter } from "./routers/marketRouter.js";
+import jwt from "jsonwebtoken";
 
 import http from "http";
 import { Server } from "socket.io";
@@ -50,7 +51,26 @@ const sessionMiddleware = session({
 app.use(sessionMiddleware);
 
 io.use((socket, next) => {
-  sessionMiddleware(socket.request, {}, next);
+    // need to decode jwt
+    // TODO: move socket stuff to new file?
+  sessionMiddleware(socket.request, {}, () => {
+    const cookieHeader = socket.request.headers.cookie || "";
+    const cookies = Object.fromEntries(
+      cookieHeader.split(";").map((c) => c.trim().split("=")),
+    );
+
+    const token = cookies.token;
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        socket.request.session.userId = decoded.id;
+      } catch (err) {
+        console.warn("Invalid JWT:", err.message);
+      }
+    }
+
+    next();
+  });
 });
 
 app.use(express.static("static"));
@@ -65,9 +85,10 @@ app.use("/api/match", matchRouter);
 app.use("/api/market", marketRouter);
 
 io.on("connection", (socket) => {
+  console.log("Session:", socket.request.session);
   const userId = socket.request?.session?.userId;
   if (!userId) {
-    console.log("unauthorized socket connection");
+    console.log("Unauthorized socket connection");
     return socket.disconnect();
   }
 
