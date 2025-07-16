@@ -8,35 +8,50 @@
       <div class="space-y-1 w-[300px]">
         <div class="flex justify-between">
           <span>CASH</span>
-          <span class="font-bold">100.00 USD</span>
+          <span class="font-bold">{{ playerCash.toFixed(2) }} USD</span>
         </div>
         <div class="flex justify-between">
           <span>STOCK OWNED</span>
-          <span class="font-bold">0.00 USD</span>
+          <span class="font-bold"
+            >{{ (playerShares * currentPrice).toFixed(2) }} USD</span
+          >
         </div>
         <div class="flex justify-between">
           <span>TOTAL VALUE</span>
-          <span class="font-bold">100.00 USD</span>
+          <span class="font-bold"
+            >{{
+              (playerCash + playerShares * currentPrice).toFixed(2)
+            }}
+            USD</span
+          >
         </div>
       </div>
       <div class="space-y-2">
         <div class="flex space-x-2">
           <input
+            v-model="buyInput"
             type="text"
             class="px-2 py-1 rounded text-black"
             placeholder="$"
           />
-          <button class="bg-[#782ACC] w-28 px-4 py-1 rounded text-white">
+          <button
+            @click="buyStock"
+            class="bg-[#782ACC] w-28 px-4 py-1 rounded text-white"
+          >
             BUY
           </button>
         </div>
         <div class="flex space-x-2">
           <input
+            v-model="sellInput"
             type="text"
             class="px-2 py-1 rounded text-black"
             placeholder="$"
           />
-          <button class="bg-[#782ACC] w-28 px-4 py-1 rounded text-white">
+          <button
+            @click="sellStock"
+            class="bg-[#782ACC] w-28 px-4 py-1 rounded text-white"
+          >
             SELL
           </button>
         </div>
@@ -77,12 +92,6 @@
       class="absolute top-0 left-1/2 transform -translate-x-1/2 w-full flex flex-col items-center pt-8 pointer-events-auto"
     >
       <div class="text-white text-6xl font-bebas">5:00</div>
-      <button
-        class="w-full mt-2 p-2 mb-4 rounded bg-purple-500 text-white"
-        @click="getMarketData"
-      >
-        Test: Simulate updating stock display!
-      </button>
       <StockDisplay
         exchange="NASDAQ"
         ticker="AAPL"
@@ -110,6 +119,10 @@ export default defineComponent({
       currentPrice: 179.76, // state for cur price
       priceChange: 2.85, // state for price change
       percentChange: 1.61, // state for perc change
+      playerCash: 100.0,
+      playerShares: 0,
+      buyInput: "",
+      sellInput: "",
       stockData: [] as Candle[], // store the fetched data
       tickInterval: null as ReturnType<typeof setInterval> | null, // for demo- for game we might want to tick from backend
     };
@@ -118,6 +131,23 @@ export default defineComponent({
     if (this.tickInterval) clearInterval(this.tickInterval);
   },
   methods: {
+    buyStock() {
+      const amount = parseFloat(this.buyInput);
+      if (isNaN(amount) || amount <= 0 || amount > this.playerCash) return;
+      const sharesToBuy = amount / this.currentPrice;
+      this.playerShares += sharesToBuy;
+      this.playerCash -= amount;
+      this.buyInput = "";
+    },
+    sellStock() {
+      const amount = parseFloat(this.sellInput);
+      const sharesToSell = amount / this.currentPrice;
+      if (isNaN(amount) || amount <= 0 || sharesToSell > this.playerShares)
+        return;
+      this.playerShares -= sharesToSell;
+      this.playerCash += amount;
+      this.sellInput = "";
+    },
     async getMarketData() {
       try {
         const res = await axios.get(
