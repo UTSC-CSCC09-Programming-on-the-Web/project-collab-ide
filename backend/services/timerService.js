@@ -9,11 +9,19 @@ class TimerService {
     const match = {
       id: matchId,
       startTime: Date.now(),
-      duration: 5 * 60 * 1000,
+      duration: 3 * 60 * 1000,
       interval: null,
     };
 
-    // Start the timer interval
+    // Store match in memory
+    this.activeMatches.set(matchId, match);
+
+    // Immediately emit 3:00 timer
+    io.to(`match-${matchId}`).emit("timer-update", {
+      timeRemaining: 180,
+    });
+
+    // Start ticking every second
     match.interval = setInterval(() => {
       const timeRemaining = this.getTimeRemaining(matchId);
 
