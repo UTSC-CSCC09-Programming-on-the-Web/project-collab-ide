@@ -13,6 +13,7 @@ import { userRouter } from "./routers/userRouter.js";
 import { queueRouter } from "./routers/queueRouter.js";
 import { matchRouter } from "./routers/matchRouter.js";
 import { marketRouter } from "./routers/marketRouter.js";
+import { timerService } from "./services/timerService.js";
 import jwt from "jsonwebtoken";
 
 import http from "http";
@@ -98,6 +99,17 @@ io.on("connection", (socket) => {
     const room = `match-${matchId}`;
     socket.join(room);
     console.log(`[Socket] User ${userId} joined room ${room}.`);
+
+    // Send current timer status to the joining user
+    const status = timerService.getMatchStatus(matchId);
+    socket.emit("timer-update", { timeRemaining: status.timeRemaining });
+
+    // Check if this is the second player and start the match
+    const roomSize = io.sockets.adapter.rooms.get(room)?.size || 0;
+    if (roomSize === 2) {
+      timerService.startMatch(matchId, io);
+      io.to(room).emit("match-started", { matchId });
+    }
   });
 
   socket.on("buy", ({ matchId, amount }) => {
