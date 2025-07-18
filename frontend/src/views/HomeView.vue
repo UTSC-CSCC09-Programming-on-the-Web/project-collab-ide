@@ -122,6 +122,7 @@ export default defineComponent({
           this.matchId = res.data.matchId;
           if (this.pollInterval) clearInterval(this.pollInterval);
 
+          // TODO: maybe should make backend /join endpoint redirect us instead
           setTimeout(() => {
             this.router.push({
               name: "MatchPage",
