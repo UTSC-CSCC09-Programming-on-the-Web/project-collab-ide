@@ -100,9 +100,25 @@ io.on("connection", (socket) => {
     socket.join(room);
     console.log(`[Socket] User ${userId} joined room ${room}.`);
 
+    // Initialize player portfolio
+    const initResult = timerService.initializePlayer(matchId, userId);
+    if (initResult && !initResult.success) {
+      socket.emit("join-error", { error: initResult.error });
+      return;
+    }
+
     // Send current timer status to the joining user
     const status = timerService.getMatchStatus(matchId);
     socket.emit("timer-update", { timeRemaining: status.timeRemaining });
+
+    // Send initial portfolio data
+    const playerData = timerService.getPlayerData ? timerService.getPlayerData(matchId, userId) : null;
+    if (playerData) {
+      socket.emit("portfolio-update", {
+        cash: playerData.cash,
+        shares: playerData.shares
+      });
+    }
 
     // Check if this is the second player and start the match
     const roomSize = io.sockets.adapter.rooms.get(room)?.size || 0;
@@ -113,11 +129,83 @@ io.on("connection", (socket) => {
   });
 
   socket.on("buy", ({ matchId, amount }) => {
-    io.to(`match-${matchId}`).emit("buy-event", { userId, amount });
+    if (!timerService.processBuy) {
+      socket.to(`match-${matchId}`).emit("opponent-trade", {
+        userId,
+        type: 'buy',
+        amount,
+        cash: 100 - amount,
+        shares: amount / 179.76
+      });
+      return;
+    }
+
+    const result = timerService.processBuy(matchId, userId, amount);
+    if (result.success) {
+      // Send updated portfolio to the buyer
+      socket.emit("portfolio-update", {
+        cash: result.playerData.cash,
+        shares: result.playerData.shares
+      });
+
+      // Broadcast trade to other players
+      socket.to(`match-${matchId}`).emit("opponent-trade", {
+        userId,
+        type: 'buy',
+        amount,
+        cash: result.playerData.cash,
+        shares: result.playerData.shares
+      });
+    } else {
+      socket.emit("trade-error", { error: result.error });
+    }
   });
 
   socket.on("sell", ({ matchId, amount }) => {
-    io.to(`match-${matchId}`).emit("sell-event", { userId, amount });
+    if (!timerService.processSell) {
+      socket.to(`match-${matchId}`).emit("opponent-trade", {
+        userId,
+        type: 'sell',
+        amount,
+        cash: 100 + amount,
+        shares: 0
+      });
+      return;
+    }
+    
+    const result = timerService.processSell(matchId, userId, amount);
+    if (result.success) {
+      // Send updated portfolio to the seller
+      socket.emit("portfolio-update", {
+        cash: result.playerData.cash,
+        shares: result.playerData.shares
+      });
+
+      // Broadcast trade to other players
+      socket.to(`match-${matchId}`).emit("opponent-trade", {
+        userId,
+        type: 'sell',
+        amount,
+        cash: result.playerData.cash,
+        shares: result.playerData.shares
+      });
+    } else {
+      socket.emit("trade-error", { error: result.error });
+    }
+  });
+
+  // Handle stock price updates
+  socket.on("stock-update", ({ matchId, price, change, percentChange }) => {
+    if (timerService.updatePrice) {
+      timerService.updatePrice(matchId, price, change, percentChange);
+    }
+    
+    // Broadcast to all players in the match
+    socket.to(`match-${matchId}`).emit("price-update", {
+      price,
+      change,
+      percentChange
+    });
   });
 });
 

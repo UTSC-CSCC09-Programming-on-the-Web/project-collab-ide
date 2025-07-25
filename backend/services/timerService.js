@@ -3,6 +3,85 @@ import { Match } from "../models/match.js";
 class TimerService {
   constructor() {
     this.activeMatches = new Map();
+    this.matchData = new Map();
+  }
+
+  initializePlayer(matchId, playerId) {
+    let matchData = this.matchData.get(matchId);
+    
+    if (!matchData) {
+      matchData = {
+        players: new Map(),
+        currentPrice: 179.76,
+        stockTicker: 'AAPL',
+        trades: []
+      };
+      this.matchData.set(matchId, matchData);
+    }
+
+    if (!matchData.players.has(playerId)) {
+      matchData.players.set(playerId, {
+        cash: 100.0,
+        shares: 0.0,
+        userId: playerId
+      });
+    }
+    
+    return { success: true, playerData: matchData.players.get(playerId) };
+  }
+
+  getPlayerData(matchId, playerId) {
+    const matchData = this.matchData.get(matchId);
+    return matchData ? matchData.players.get(playerId) : null;
+  }
+
+  processBuy(matchId, playerId, amount) {
+    const matchData = this.matchData.get(matchId);
+    if (!matchData) return { success: false, error: 'Match not found' };
+
+    const player = matchData.players.get(playerId);
+    if (!player) return { success: false, error: 'Player not found' };
+
+    if (amount <= 0 || amount > player.cash) {
+      return { success: false, error: 'Invalid amount or insufficient funds' };
+    }
+
+    const sharesToBuy = amount / matchData.currentPrice;
+    player.cash -= amount;
+    player.shares += sharesToBuy;
+
+    return {
+      success: true,
+      playerData: { cash: player.cash, shares: player.shares }
+    };
+  }
+
+  processSell(matchId, playerId, amount) {
+    const matchData = this.matchData.get(matchId);
+    if (!matchData) return { success: false, error: 'Match not found' };
+
+    const player = matchData.players.get(playerId);
+    if (!player) return { success: false, error: 'Player not found' };
+
+    const sharesToSell = amount / matchData.currentPrice;
+    if (amount <= 0 || sharesToSell > player.shares) {
+      return { success: false, error: 'Invalid amount or insufficient shares' };
+    }
+
+    player.cash += amount;
+    player.shares -= sharesToSell;
+
+    return {
+      success: true,
+      playerData: { cash: player.cash, shares: player.shares }
+    };
+  }
+
+  updatePrice(matchId, newPrice) {
+    const matchData = this.matchData.get(matchId);
+    if (matchData) {
+      matchData.currentPrice = newPrice;
+    }
   }
 
   startMatch(matchId, io) {
