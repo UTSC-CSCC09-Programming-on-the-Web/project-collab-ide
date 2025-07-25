@@ -8,13 +8,13 @@ class MatchService {
 
   initializePlayer(matchId, playerId) {
     let matchData = this.matchData.get(matchId);
-    
+
     if (!matchData) {
       matchData = {
         players: new Map(),
         currentPrice: 179.76,
-        stockTicker: 'AAPL',
-        trades: []
+        stockTicker: "AAPL",
+        trades: [],
       };
       this.matchData.set(matchId, matchData);
     }
@@ -23,10 +23,10 @@ class MatchService {
       matchData.players.set(playerId, {
         cash: 100.0,
         shares: 0.0,
-        userId: playerId
+        userId: playerId,
       });
     }
-    
+
     return { success: true, playerData: matchData.players.get(playerId) };
   }
 
@@ -37,13 +37,13 @@ class MatchService {
 
   processBuy(matchId, playerId, amount) {
     const matchData = this.matchData.get(matchId);
-    if (!matchData) return { success: false, error: 'Match not found' };
+    if (!matchData) return { success: false, error: "Match not found" };
 
     const player = matchData.players.get(playerId);
-    if (!player) return { success: false, error: 'Player not found' };
+    if (!player) return { success: false, error: "Player not found" };
 
     if (amount <= 0 || amount > player.cash) {
-      return { success: false, error: 'Invalid amount or insufficient funds' };
+      return { success: false, error: "Invalid amount or insufficient funds" };
     }
 
     const sharesToBuy = amount / matchData.currentPrice;
@@ -52,20 +52,20 @@ class MatchService {
 
     return {
       success: true,
-      playerData: { cash: player.cash, shares: player.shares }
+      playerData: { cash: player.cash, shares: player.shares },
     };
   }
 
   processSell(matchId, playerId, amount) {
     const matchData = this.matchData.get(matchId);
-    if (!matchData) return { success: false, error: 'Match not found' };
+    if (!matchData) return { success: false, error: "Match not found" };
 
     const player = matchData.players.get(playerId);
-    if (!player) return { success: false, error: 'Player not found' };
+    if (!player) return { success: false, error: "Player not found" };
 
     const sharesToSell = amount / matchData.currentPrice;
     if (amount <= 0 || sharesToSell > player.shares) {
-      return { success: false, error: 'Invalid amount or insufficient shares' };
+      return { success: false, error: "Invalid amount or insufficient shares" };
     }
 
     player.cash += amount;
@@ -73,7 +73,7 @@ class MatchService {
 
     return {
       success: true,
-      playerData: { cash: player.cash, shares: player.shares }
+      playerData: { cash: player.cash, shares: player.shares },
     };
   }
 
@@ -188,7 +188,7 @@ class MatchService {
   async storeFinalResults(matchId, matchData) {
     try {
       if (!matchData || matchData.players.size < 2) {
-        console.log('Insufficient player data for match', matchId);
+        console.log("Insufficient player data for match", matchId);
         return;
       }
 
@@ -199,8 +199,8 @@ class MatchService {
       const player2 = players[1];
 
       // Calculate payouts
-      const player1FinalValue = player1.cash + (player1.shares * currentPrice);
-      const player2FinalValue = player2.cash + (player2.shares * currentPrice);
+      const player1FinalValue = player1.cash + player1.shares * currentPrice;
+      const player2FinalValue = player2.cash + player2.shares * currentPrice;
       const player1Payout = player1FinalValue - STARTING_AMOUNT;
       const player2Payout = player2FinalValue - STARTING_AMOUNT;
 
@@ -216,15 +216,18 @@ class MatchService {
       }
 
       // Update match in database with final results
-      await Match.update({
-        status: 'finished',
-        winnerId,
-        loserId,
-        player1Payout: Math.round(player1Payout * 100) / 100,
-        player2Payout: Math.round(player2Payout * 100) / 100,
-      }, {
-        where: { id: matchId }
-      });
+      await Match.update(
+        {
+          status: "finished",
+          winnerId,
+          loserId,
+          player1Payout: Math.round(player1Payout * 100) / 100,
+          player2Payout: Math.round(player2Payout * 100) / 100,
+        },
+        {
+          where: { id: matchId },
+        },
+      );
 
       return {
         winnerId,
@@ -237,11 +240,10 @@ class MatchService {
           userId: player2.userId,
           payout: player2Payout,
         },
-        finalStockPrice: currentPrice
+        finalStockPrice: currentPrice,
       };
-      
     } catch (error) {
-      console.error('Error storing match results:', error);
+      console.error("Error storing match results:", error);
       return null;
     }
   }

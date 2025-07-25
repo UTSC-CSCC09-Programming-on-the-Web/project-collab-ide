@@ -28,7 +28,7 @@ export const Match = sequelize.define("Match", {
     type: DataTypes.ENUM("pending", "active", "finished"),
     defaultValue: "pending",
   },
-    winnerId: {
+  winnerId: {
     type: DataTypes.INTEGER,
     allowNull: true,
   },

@@ -112,11 +112,13 @@ io.on("connection", (socket) => {
     socket.emit("timer-update", { timeRemaining: status.timeRemaining });
 
     // Send initial portfolio data
-    const playerData = matchService.getPlayerData ? matchService.getPlayerData(matchId, userId) : null;
+    const playerData = matchService.getPlayerData
+      ? matchService.getPlayerData(matchId, userId)
+      : null;
     if (playerData) {
       socket.emit("portfolio-update", {
         cash: playerData.cash,
-        shares: playerData.shares
+        shares: playerData.shares,
       });
     }
 
@@ -132,10 +134,10 @@ io.on("connection", (socket) => {
     if (!matchService.processBuy) {
       socket.to(`match-${matchId}`).emit("opponent-trade", {
         userId,
-        type: 'buy',
+        type: "buy",
         amount,
         cash: 100 - amount,
-        shares: amount / 179.76
+        shares: amount / 179.76,
       });
       return;
     }
@@ -145,16 +147,16 @@ io.on("connection", (socket) => {
       // Send updated portfolio to the buyer
       socket.emit("portfolio-update", {
         cash: result.playerData.cash,
-        shares: result.playerData.shares
+        shares: result.playerData.shares,
       });
 
       // Broadcast trade to other players
       socket.to(`match-${matchId}`).emit("opponent-trade", {
         userId,
-        type: 'buy',
+        type: "buy",
         amount,
         cash: result.playerData.cash,
-        shares: result.playerData.shares
+        shares: result.playerData.shares,
       });
     } else {
       socket.emit("trade-error", { error: result.error });
@@ -165,29 +167,29 @@ io.on("connection", (socket) => {
     if (!matchService.processSell) {
       socket.to(`match-${matchId}`).emit("opponent-trade", {
         userId,
-        type: 'sell',
+        type: "sell",
         amount,
         cash: 100 + amount,
-        shares: 0
+        shares: 0,
       });
       return;
     }
-    
+
     const result = matchService.processSell(matchId, userId, amount);
     if (result.success) {
       // Send updated portfolio to the seller
       socket.emit("portfolio-update", {
         cash: result.playerData.cash,
-        shares: result.playerData.shares
+        shares: result.playerData.shares,
       });
 
       // Broadcast trade to other players
       socket.to(`match-${matchId}`).emit("opponent-trade", {
         userId,
-        type: 'sell',
+        type: "sell",
         amount,
         cash: result.playerData.cash,
-        shares: result.playerData.shares
+        shares: result.playerData.shares,
       });
     } else {
       socket.emit("trade-error", { error: result.error });
@@ -199,12 +201,12 @@ io.on("connection", (socket) => {
     if (matchService.updatePrice) {
       matchService.updatePrice(matchId, price, change, percentChange);
     }
-    
+
     // Broadcast to all players in the match
     socket.to(`match-${matchId}`).emit("price-update", {
       price,
       change,
-      percentChange
+      percentChange,
     });
   });
 });
