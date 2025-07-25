@@ -129,9 +129,15 @@ class MatchService {
     return Math.max(0, match.duration - elapsed);
   }
 
-  endMatch(matchId, io) {
+  async endMatch(matchId, io) {
     const match = this.activeMatches.get(matchId);
     if (!match) return;
+
+    // Calculate and store final results
+    const matchData = this.matchData.get(matchId);
+    if (matchData && matchData.players.size >= 2) {
+      await this.storeFinalResults(matchId, matchData);
+    }
 
     // Clear the interval
     if (match.interval) {
@@ -140,6 +146,7 @@ class MatchService {
 
     // Remove from active matches
     this.activeMatches.delete(matchId);
+    this.matchData.delete(matchId);
 
     // Broadcast match end
     io.to(`match-${matchId}`).emit("match-ended", {
@@ -147,7 +154,9 @@ class MatchService {
     });
 
     // Update database
-    this.updateMatchInDB(matchId, "finished");
+    if (!matchData || matchData.players.size < 2) {
+      this.updateMatchInDB(matchId, "finished");
+    }
   }
 
   async updateMatchInDB(matchId, status, startTime = null) {
@@ -174,6 +183,67 @@ class MatchService {
       timeRemaining: Math.floor(this.getTimeRemaining(matchId) / 1000),
       isActive: true,
     };
+  }
+
+  async storeFinalResults(matchId, matchData) {
+    try {
+      if (!matchData || matchData.players.size < 2) {
+        console.log('Insufficient player data for match', matchId);
+        return;
+      }
+
+      const players = Array.from(matchData.players.values());
+      const currentPrice = matchData.currentPrice;
+      const STARTING_AMOUNT = 100.0;
+      const player1 = players[0];
+      const player2 = players[1];
+
+      // Calculate payouts
+      const player1FinalValue = player1.cash + (player1.shares * currentPrice);
+      const player2FinalValue = player2.cash + (player2.shares * currentPrice);
+      const player1Payout = player1FinalValue - STARTING_AMOUNT;
+      const player2Payout = player2FinalValue - STARTING_AMOUNT;
+
+      // Determine winner and loser
+      let winnerId = null;
+      let loserId = null;
+      if (player1FinalValue > player2FinalValue) {
+        winnerId = player1.userId;
+        loserId = player2.userId;
+      } else if (player2FinalValue > player1FinalValue) {
+        winnerId = player2.userId;
+        loserId = player1.userId;
+      }
+
+      // Update match in database with final results
+      await Match.update({
+        status: 'finished',
+        winnerId,
+        loserId,
+        player1Payout: Math.round(player1Payout * 100) / 100,
+        player2Payout: Math.round(player2Payout * 100) / 100,
+      }, {
+        where: { id: matchId }
+      });
+
+      return {
+        winnerId,
+        loserId,
+        player1: {
+          userId: player1.userId,
+          payout: player1Payout,
+        },
+        player2: {
+          userId: player2.userId,
+          payout: player2Payout,
+        },
+        finalStockPrice: currentPrice
+      };
+      
+    } catch (error) {
+      console.error('Error storing match results:', error);
+      return null;
+    }
   }
 }
 
