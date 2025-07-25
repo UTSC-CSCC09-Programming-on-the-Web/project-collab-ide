@@ -1,6 +1,6 @@
 import { Match } from "../models/match.js";
 
-class TimerService {
+class MatchService {
   constructor() {
     this.activeMatches = new Map();
     this.matchData = new Map();
@@ -177,4 +177,4 @@ class TimerService {
   }
 }
 
-export const timerService = new TimerService();
+export const matchService = new MatchService();

@@ -13,7 +13,7 @@ import { userRouter } from "./routers/userRouter.js";
 import { queueRouter } from "./routers/queueRouter.js";
 import { matchRouter } from "./routers/matchRouter.js";
 import { marketRouter } from "./routers/marketRouter.js";
-import { timerService } from "./services/timerService.js";
+import { matchService } from "./services/matchService.js";
 import jwt from "jsonwebtoken";
 
 import http from "http";
@@ -101,18 +101,18 @@ io.on("connection", (socket) => {
     console.log(`[Socket] User ${userId} joined room ${room}.`);
 
     // Initialize player portfolio
-    const initResult = timerService.initializePlayer(matchId, userId);
+    const initResult = matchService.initializePlayer(matchId, userId);
     if (initResult && !initResult.success) {
       socket.emit("join-error", { error: initResult.error });
       return;
     }
 
     // Send current timer status to the joining user
-    const status = timerService.getMatchStatus(matchId);
+    const status = matchService.getMatchStatus(matchId);
     socket.emit("timer-update", { timeRemaining: status.timeRemaining });
 
     // Send initial portfolio data
-    const playerData = timerService.getPlayerData ? timerService.getPlayerData(matchId, userId) : null;
+    const playerData = matchService.getPlayerData ? matchService.getPlayerData(matchId, userId) : null;
     if (playerData) {
       socket.emit("portfolio-update", {
         cash: playerData.cash,
@@ -123,13 +123,13 @@ io.on("connection", (socket) => {
     // Check if this is the second player and start the match
     const roomSize = io.sockets.adapter.rooms.get(room)?.size || 0;
     if (roomSize === 2) {
-      timerService.startMatch(matchId, io);
+      matchService.startMatch(matchId, io);
       io.to(room).emit("match-started", { matchId });
     }
   });
 
   socket.on("buy", ({ matchId, amount }) => {
-    if (!timerService.processBuy) {
+    if (!matchService.processBuy) {
       socket.to(`match-${matchId}`).emit("opponent-trade", {
         userId,
         type: 'buy',
@@ -140,7 +140,7 @@ io.on("connection", (socket) => {
       return;
     }
 
-    const result = timerService.processBuy(matchId, userId, amount);
+    const result = matchService.processBuy(matchId, userId, amount);
     if (result.success) {
       // Send updated portfolio to the buyer
       socket.emit("portfolio-update", {
@@ -162,7 +162,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("sell", ({ matchId, amount }) => {
-    if (!timerService.processSell) {
+    if (!matchService.processSell) {
       socket.to(`match-${matchId}`).emit("opponent-trade", {
         userId,
         type: 'sell',
@@ -173,7 +173,7 @@ io.on("connection", (socket) => {
       return;
     }
     
-    const result = timerService.processSell(matchId, userId, amount);
+    const result = matchService.processSell(matchId, userId, amount);
     if (result.success) {
       // Send updated portfolio to the seller
       socket.emit("portfolio-update", {
@@ -196,8 +196,8 @@ io.on("connection", (socket) => {
 
   // Handle stock price updates
   socket.on("stock-update", ({ matchId, price, change, percentChange }) => {
-    if (timerService.updatePrice) {
-      timerService.updatePrice(matchId, price, change, percentChange);
+    if (matchService.updatePrice) {
+      matchService.updatePrice(matchId, price, change, percentChange);
     }
     
     // Broadcast to all players in the match

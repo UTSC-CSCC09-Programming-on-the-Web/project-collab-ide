@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { Match } from "../models/match.js";
 import { isAuthenticated } from "../middleware/auth.js";
-import { timerService } from "../services/timerService.js";
+import { matchService } from "../services/matchService.js";
 import Sequelize from "sequelize";
 
 export const matchRouter = Router();
@@ -43,7 +43,7 @@ matchRouter.get("/:id/status", isAuthenticated, async (req, res) => {
     }
 
     // Get timer status from service
-    const timerStatus = timerService.getMatchStatus(matchId);
+    const timerStatus = matchService.getMatchStatus(matchId);
 
     // Return match info with timer
     const response = {
