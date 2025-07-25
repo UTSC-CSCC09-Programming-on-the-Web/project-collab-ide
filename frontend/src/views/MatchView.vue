@@ -133,7 +133,7 @@
               (playerCash + playerShares * currentPrice).toFixed(2)
             }}
           </p>
-          <p>Opponent Total: ${{ opponentCash.toFixed(2) }}</p>
+          <p>Opponent Total: ${{ opponentTotalValue.toFixed(2) }}</p>
         </div>
         <div class="space-x-4">
           <button
@@ -306,11 +306,8 @@ export default defineComponent({
       if (!this.isMatchActive || this.isMatchEnded) return;
 
       const amount = parseFloat(this.buyInput);
-      if (isNaN(amount) || amount <= 0 || amount > this.playerCash) return;
+      if (isNaN(amount) || amount <= 0) return;
 
-      const shares = amount / this.currentPrice;
-      this.playerShares += shares;
-      this.playerCash -= amount;
       this.socket?.emit("buy", { matchId: this.$route.params.id, amount });
       this.buyInput = "";
     },
@@ -319,11 +316,8 @@ export default defineComponent({
       if (!this.isMatchActive || this.isMatchEnded) return;
 
       const amount = parseFloat(this.sellInput);
-      const shares = amount / this.currentPrice;
-      if (isNaN(amount) || amount <= 0 || shares > this.playerShares) return;
+      if (isNaN(amount) || amount <= 0) return;
 
-      this.playerShares -= shares;
-      this.playerCash += amount;
       this.socket?.emit("sell", { matchId: this.$route.params.id, amount });
       this.sellInput = "";
     },
