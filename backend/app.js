@@ -125,12 +125,16 @@ io.on("connection", (socket) => {
       const hostUserId =
         playerArray[Math.floor(Math.random() * playerArray.length)];
 
-      matchService.startMatch(matchId, io);
+      getRandomMarketCombo().then((marketCombo) => {
+        matchService.startMatch(matchId, io); 
 
-      io.to(room).emit("match-started", {
-        matchId,
-        hostUserId,
+        io.to(room).emit("match-started", {
+          matchId,
+          hostUserId,
+          marketCombo,
+        });
       });
+
       // Send initial portfolio data
       const playerData = matchService.getPlayerData
         ? matchService.getPlayerData(matchId, userId)
@@ -139,15 +143,6 @@ io.on("connection", (socket) => {
         socket.emit("portfolio-update", {
           cash: playerData.cash,
           shares: playerData.shares,
-        });
-      }
-
-      // Check if this is the second player and start the match
-      const roomSize = io.sockets.adapter.rooms.get(room)?.size || 0;
-      if (roomSize === 2) {
-        getRandomMarketCombo().then((marketCombo) => {
-          matchService.startMatch(matchId, io);
-          io.to(room).emit("match-started", { matchId, marketCombo });
         });
       }
     }
@@ -227,15 +222,6 @@ io.on("connection", (socket) => {
 
     // Broadcast to all players in the match
     socket.to(`match-${matchId}`).emit("price-update", {
-      price,
-      change,
-      percentChange,
-    });
-  });
-
-  socket.on("stock-update", ({ matchId, price, change, percentChange }) => {
-    // Only relay to other player (not back to the host)
-    socket.to(`match-${matchId}`).emit("stock-update", {
       price,
       change,
       percentChange,

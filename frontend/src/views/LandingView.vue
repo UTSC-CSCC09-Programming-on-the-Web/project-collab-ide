@@ -44,9 +44,7 @@ const start = () => {
 
 .start-button {
   font-family: "Roboto Condensed", sans-serif;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
   border-radius: 20px;
 }
 

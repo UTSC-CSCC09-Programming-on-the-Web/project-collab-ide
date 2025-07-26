@@ -204,7 +204,7 @@ export default defineComponent({
           this.setupSocket(user.id);
         }
       },
-      { immediate: true },
+      { immediate: true }
     );
   },
   beforeUnmount() {
@@ -236,7 +236,7 @@ export default defineComponent({
         ({ cash, shares }: { cash: number; shares: number }) => {
           this.playerCash = cash;
           this.playerShares = shares;
-        },
+        }
       );
 
       // Listen for opponent trades
@@ -261,7 +261,7 @@ export default defineComponent({
           this.opponentUserId = userId;
           this.opponentCash = cash;
           this.opponentShares = shares;
-        },
+        }
       );
 
       // Listen for match start
@@ -269,6 +269,7 @@ export default defineComponent({
         "match-started",
         (data: {
           matchId: string;
+          hostUserId: number;
           marketCombo: {
             ticker: string;
             market: string;
@@ -278,12 +279,20 @@ export default defineComponent({
           this.isMatchActive = true;
           this.isMatchEnded = false;
           this.playersInMatch = 2;
-          this.getMarketData(
-            data.marketCombo.market,
-            data.marketCombo.ticker,
-            data.marketCombo.marketDate,
-          );
-        },
+
+          this.isHost = this.userStore.user?.id === data.hostUserId;
+
+          if (this.isHost) {
+            this.getMarketData(
+              data.marketCombo.market,
+              data.marketCombo.ticker,
+              data.marketCombo.marketDate
+            );
+          } else {
+            this.exchange = data.marketCombo.market;
+            this.ticker = data.marketCombo.ticker;
+          }
+        }
       );
 
       // Listen for match end
@@ -300,7 +309,7 @@ export default defineComponent({
           if (userId === myUserId) return;
           this.opponentCash -= amount;
           this.opponentUserId = userId;
-        },
+        }
       );
 
       this.socket.on(
@@ -310,16 +319,16 @@ export default defineComponent({
           const sharesSold = amount / this.currentPrice;
           this.opponentCash += amount;
           this.opponentUserId = userId;
-        },
+        }
       );
 
       this.socket.on(
-        "stock-update",
+        "price-update",
         (data: { price: number; change: number; percentChange: number }) => {
           this.currentPrice = data.price;
           this.priceChange = data.change;
           this.percentChange = data.percentChange;
-        },
+        }
       );
     },
 
@@ -366,7 +375,7 @@ export default defineComponent({
               limit: 180,
             },
             withCredentials: true,
-          },
+          }
         );
         this.stockData = res.data.candles;
         this.exchange = market;
@@ -404,7 +413,7 @@ export default defineComponent({
 
           index++;
 
-          const randomDelay = Math.floor(Math.random() * 10 + 1) * 1000;
+          const randomDelay = Math.floor(Math.random() * 3 + 1) * 1000;
           this.tickInterval = setTimeout(updatePrice, randomDelay);
         };
 
