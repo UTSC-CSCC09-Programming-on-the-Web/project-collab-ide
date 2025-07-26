@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { MarketFact } from "../models/marketFact.js";
 import { MarketCandle } from "../models/marketCandle.js";
+import { Sequelize } from "sequelize";
 
 export const marketRouter = Router();
 
@@ -91,39 +92,6 @@ marketRouter.get("/candles", async (req, res) => {
   }
 });
 
-// GET /api/market/random
-marketRouter.get("/random", async (req, res) => {
-  try {
-    const [randomCombo] = await MarketCandle.findAll({
-      attributes: ["market", "ticker", "date"],
-      group: ["market", "ticker", "date"],
-      order: [Sequelize.literal("RANDOM()")],
-      limit: 1,
-    });
-
-    if (!randomCombo) {
-      return res.status(404).json({ error: "No market candle data found." });
-    }
-
-    const candles = await getCandles({
-      market: randomCombo.market,
-      ticker: randomCombo.ticker,
-      date: randomCombo.date,
-    });
-
-    res.json({
-      market: randomCombo.market,
-      ticker: randomCombo.ticker,
-      date: randomCombo.date,
-      total: candles.length,
-      candles,
-    });
-  } catch (err) {
-    console.error("[ERROR] /api/market/random", err);
-    res.status(500).json({ error: "Internal server error." });
-  }
-});
-
 const getCandles = async ({ market, ticker, date, page = 0, limit = 180 }) => {
   const offset = page * limit;
 
@@ -139,4 +107,21 @@ const getCandles = async ({ market, ticker, date, page = 0, limit = 180 }) => {
   });
 
   return candles;
-}
+};
+
+export const getRandomMarketCombo = async () => {
+  const [randomCombo] = await MarketCandle.findAll({
+    attributes: ["market", "ticker", "date"],
+    group: ["market", "ticker", "date"],
+    order: [Sequelize.literal("RANDOM()")],
+    limit: 1,
+  });
+
+  if (!randomCombo) throw new Error("No candle data found.");
+
+  return {
+    market: randomCombo.market,
+    ticker: randomCombo.ticker,
+    marketDate: randomCombo.date,
+  };
+};
