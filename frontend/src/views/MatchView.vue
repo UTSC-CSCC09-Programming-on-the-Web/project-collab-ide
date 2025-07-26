@@ -308,6 +308,11 @@ export default defineComponent({
         this.isMatchEnded = true;
         this.isMatchActive = false;
         this.timeRemaining = 0;
+
+        if (this.tickInterval) {
+          clearTimeout(this.tickInterval);
+          this.tickInterval = null;
+        }
       });
 
       // Existing trading events
@@ -380,18 +385,9 @@ export default defineComponent({
         this.exchange = market;
         this.ticker = ticker;
         let index = 0;
-        const maxDuration = 180000; // 3 minutes
-        const startTime = Date.now();
 
         const updatePrice = () => {
-          if (
-            index >= this.stockData.length ||
-            this.isMatchEnded ||
-            Date.now() - startTime >= maxDuration
-          ) {
-            this.isMatchEnded = true;
-            this.isMatchActive = false;
-            this.timeRemaining = 0;
+          if (index >= this.stockData.length || this.isMatchEnded) {
             return;
           }
 
@@ -412,11 +408,14 @@ export default defineComponent({
 
           index++;
 
-          const randomDelay = Math.floor(Math.random() * 10 + 1) * 1000;
-          this.tickInterval = setTimeout(updatePrice, randomDelay);
+          // Continue updating if match is still active
+          if (!this.isMatchEnded) {
+            const randomDelay = Math.floor(Math.random() * 10 + 1) * 1000;
+            this.tickInterval = setTimeout(updatePrice, randomDelay);
+          }
         };
 
-        // Kick off the first update
+        // Kick off the first price update
         updatePrice();
       } catch (err: any) {
         console.error(err.response?.data || err.message);
