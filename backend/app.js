@@ -13,7 +13,7 @@ import { userRouter } from "./routers/userRouter.js";
 import { queueRouter } from "./routers/queueRouter.js";
 import { matchRouter } from "./routers/matchRouter.js";
 import { marketRouter } from "./routers/marketRouter.js";
-import { timerService } from "./services/timerService.js";
+import { matchService } from "./services/matchService.js";
 import jwt from "jsonwebtoken";
 
 import http from "http";
@@ -106,9 +106,15 @@ io.on("connection", (socket) => {
       matchPlayers.set(matchId, new Set());
     }
     matchPlayers.get(matchId).add(userId);
+    // Initialize player portfolio
+    const initResult = matchService.initializePlayer(matchId, userId);
+    if (initResult && !initResult.success) {
+      socket.emit("join-error", { error: initResult.error });
+      return;
+    }
 
     // Send current timer status to the joining user
-    const status = timerService.getMatchStatus(matchId);
+    const status = matchService.getMatchStatus(matchId);
     socket.emit("timer-update", { timeRemaining: status.timeRemaining });
 
     const players = matchPlayers.get(matchId);
@@ -118,21 +124,103 @@ io.on("connection", (socket) => {
       const playerArray = Array.from(players);
       const hostUserId = playerArray[Math.floor(Math.random() * playerArray.length)];
 
-      timerService.startMatch(matchId, io);
+      matchService.startMatch(matchId, io);
 
       io.to(room).emit("match-started", {
         matchId,
         hostUserId,
       });
+    // Send initial portfolio data
+    const playerData = matchService.getPlayerData
+      ? matchService.getPlayerData(matchId, userId)
+      : null;
+    if (playerData) {
+      socket.emit("portfolio-update", {
+        cash: playerData.cash,
+        shares: playerData.shares,
+      });
+    }
     }
   });
 
   socket.on("buy", ({ matchId, amount }) => {
-    io.to(`match-${matchId}`).emit("buy-event", { userId, amount });
+    if (!matchService.processBuy) {
+      socket.to(`match-${matchId}`).emit("opponent-trade", {
+        userId,
+        type: "buy",
+        amount,
+        cash: 100 - amount,
+        shares: amount / 179.76,
+      });
+      return;
+    }
+
+    const result = matchService.processBuy(matchId, userId, amount);
+    if (result.success) {
+      // Send updated portfolio to the buyer
+      socket.emit("portfolio-update", {
+        cash: result.playerData.cash,
+        shares: result.playerData.shares,
+      });
+
+      // Broadcast trade to other players
+      socket.to(`match-${matchId}`).emit("opponent-trade", {
+        userId,
+        type: "buy",
+        amount,
+        cash: result.playerData.cash,
+        shares: result.playerData.shares,
+      });
+    } else {
+      socket.emit("trade-error", { error: result.error });
+    }
   });
 
   socket.on("sell", ({ matchId, amount }) => {
-    io.to(`match-${matchId}`).emit("sell-event", { userId, amount });
+    if (!matchService.processSell) {
+      socket.to(`match-${matchId}`).emit("opponent-trade", {
+        userId,
+        type: "sell",
+        amount,
+        cash: 100 + amount,
+        shares: 0,
+      });
+      return;
+    }
+
+    const result = matchService.processSell(matchId, userId, amount);
+    if (result.success) {
+      // Send updated portfolio to the seller
+      socket.emit("portfolio-update", {
+        cash: result.playerData.cash,
+        shares: result.playerData.shares,
+      });
+
+      // Broadcast trade to other players
+      socket.to(`match-${matchId}`).emit("opponent-trade", {
+        userId,
+        type: "sell",
+        amount,
+        cash: result.playerData.cash,
+        shares: result.playerData.shares,
+      });
+    } else {
+      socket.emit("trade-error", { error: result.error });
+    }
+  });
+
+  // Handle stock price updates
+  socket.on("stock-update", ({ matchId, price, change, percentChange }) => {
+    if (matchService.updatePrice) {
+      matchService.updatePrice(matchId, price, change, percentChange);
+    }
+
+    // Broadcast to all players in the match
+    socket.to(`match-${matchId}`).emit("price-update", {
+      price,
+      change,
+      percentChange,
+    });
   });
 
   socket.on("stock-update", ({matchId, price, change, percentChange}) => {

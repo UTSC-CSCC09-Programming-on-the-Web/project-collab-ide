@@ -74,6 +74,16 @@
           <span>CASH</span>
           <span class="font-bold">{{ opponentCash.toFixed(2) }} USD</span>
         </div>
+        <div class="flex justify-between">
+          <span>STOCK OWNED</span>
+          <span class="font-bold"
+            >{{ (opponentShares * currentPrice).toFixed(2) }} USD</span
+          >
+        </div>
+        <div class="flex justify-between">
+          <span>TOTAL VALUE</span>
+          <span class="font-bold">{{ opponentTotalValue.toFixed(2) }} USD</span>
+        </div>
       </div>
     </div>
 
@@ -123,7 +133,7 @@
               (playerCash + playerShares * currentPrice).toFixed(2)
             }}
           </p>
-          <p>Opponent Total: ${{ opponentCash.toFixed(2) }}</p>
+          <p>Opponent Total: ${{ opponentTotalValue.toFixed(2) }}</p>
         </div>
         <div class="space-x-4">
           <button
@@ -161,6 +171,7 @@ export default defineComponent({
       // Player & Opponent Data
       opponentUserId: null as number | null,
       opponentCash: 100.0,
+      opponentShares: 0.0,
       playerCash: 100.0,
       playerShares: 0,
       isHost: false,
@@ -174,6 +185,14 @@ export default defineComponent({
       stockData: [] as Candle[],
       tickInterval: null as ReturnType<typeof setInterval> | null,
     };
+  },
+  computed: {
+    playerTotalValue(): number {
+      return this.playerCash + this.playerShares * this.currentPrice;
+    },
+    opponentTotalValue(): number {
+      return this.opponentCash + this.opponentShares * this.currentPrice;
+    },
   },
   mounted() {
     watch(
@@ -208,6 +227,40 @@ export default defineComponent({
       this.socket.on("timer-update", (data: { timeRemaining: number }) => {
         this.timeRemaining = data.timeRemaining;
       });
+
+      // Listen for your portfolio updates
+      this.socket.on(
+        "portfolio-update",
+        ({ cash, shares }: { cash: number; shares: number }) => {
+          this.playerCash = cash;
+          this.playerShares = shares;
+        }
+      );
+
+      // Listen for opponent trades
+      this.socket.on(
+        "opponent-trade",
+        ({
+          userId,
+          type,
+          amount,
+          cash,
+          shares,
+        }: {
+          userId: number;
+          type: string;
+          amount: number;
+          cash: number;
+          shares: number;
+        }) => {
+          if (userId === myUserId) return;
+
+          // Update opponent's full portfolio data
+          this.opponentUserId = userId;
+          this.opponentCash = cash;
+          this.opponentShares = shares;
+        }
+      );
 
       // Listen for match start
       this.socket.on(
@@ -270,11 +323,8 @@ export default defineComponent({
       if (!this.isMatchActive || this.isMatchEnded) return;
 
       const amount = parseFloat(this.buyInput);
-      if (isNaN(amount) || amount <= 0 || amount > this.playerCash) return;
+      if (isNaN(amount) || amount <= 0) return;
 
-      const shares = amount / this.currentPrice;
-      this.playerShares += shares;
-      this.playerCash -= amount;
       this.socket?.emit("buy", { matchId: this.$route.params.id, amount });
       this.buyInput = "";
     },
@@ -283,11 +333,8 @@ export default defineComponent({
       if (!this.isMatchActive || this.isMatchEnded) return;
 
       const amount = parseFloat(this.sellInput);
-      const shares = amount / this.currentPrice;
-      if (isNaN(amount) || amount <= 0 || shares > this.playerShares) return;
+      if (isNaN(amount) || amount <= 0) return;
 
-      this.playerShares -= shares;
-      this.playerCash += amount;
       this.socket?.emit("sell", { matchId: this.$route.params.id, amount });
       this.sellInput = "";
     },
