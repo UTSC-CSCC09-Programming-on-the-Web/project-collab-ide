@@ -12,7 +12,7 @@ import { authRouter } from "./routers/authRouter.js";
 import { userRouter } from "./routers/userRouter.js";
 import { queueRouter } from "./routers/queueRouter.js";
 import { matchRouter } from "./routers/matchRouter.js";
-import { marketRouter } from "./routers/marketRouter.js";
+import { marketRouter, getRandomMarketCombo } from "./routers/marketRouter.js";
 import { matchService } from "./services/matchService.js";
 import jwt from "jsonwebtoken";
 
@@ -122,7 +122,8 @@ io.on("connection", (socket) => {
     if (players.size === 2) {
       // Randomly pick host
       const playerArray = Array.from(players);
-      const hostUserId = playerArray[Math.floor(Math.random() * playerArray.length)];
+      const hostUserId =
+        playerArray[Math.floor(Math.random() * playerArray.length)];
 
       matchService.startMatch(matchId, io);
 
@@ -130,16 +131,25 @@ io.on("connection", (socket) => {
         matchId,
         hostUserId,
       });
-    // Send initial portfolio data
-    const playerData = matchService.getPlayerData
-      ? matchService.getPlayerData(matchId, userId)
-      : null;
-    if (playerData) {
-      socket.emit("portfolio-update", {
-        cash: playerData.cash,
-        shares: playerData.shares,
-      });
-    }
+      // Send initial portfolio data
+      const playerData = matchService.getPlayerData
+        ? matchService.getPlayerData(matchId, userId)
+        : null;
+      if (playerData) {
+        socket.emit("portfolio-update", {
+          cash: playerData.cash,
+          shares: playerData.shares,
+        });
+      }
+
+      // Check if this is the second player and start the match
+      const roomSize = io.sockets.adapter.rooms.get(room)?.size || 0;
+      if (roomSize === 2) {
+        getRandomMarketCombo().then((marketCombo) => {
+          matchService.startMatch(matchId, io);
+          io.to(room).emit("match-started", { matchId, marketCombo });
+        });
+      }
     }
   });
 
@@ -223,7 +233,7 @@ io.on("connection", (socket) => {
     });
   });
 
-  socket.on("stock-update", ({matchId, price, change, percentChange}) => {
+  socket.on("stock-update", ({ matchId, price, change, percentChange }) => {
     // Only relay to other player (not back to the host)
     socket.to(`match-${matchId}`).emit("stock-update", {
       price,
