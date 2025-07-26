@@ -13,7 +13,7 @@ import { userRouter } from "./routers/userRouter.js";
 import { queueRouter } from "./routers/queueRouter.js";
 import { matchRouter } from "./routers/matchRouter.js";
 import { marketRouter, getRandomMarketCombo } from "./routers/marketRouter.js";
-import { timerService } from "./services/timerService.js";
+import { matchService } from "./services/matchService.js";
 import jwt from "jsonwebtoken";
 
 import http from "http";
