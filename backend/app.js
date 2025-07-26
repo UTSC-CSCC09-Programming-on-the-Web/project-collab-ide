@@ -85,6 +85,7 @@ app.use("/api/queue", queueRouter);
 app.use("/api/match", matchRouter);
 app.use("/api/market", marketRouter);
 
+const matchPlayers = new Map();
 io.on("connection", (socket) => {
   console.log("Session:", socket.request.session);
   const userId = socket.request?.session?.userId;
@@ -100,15 +101,29 @@ io.on("connection", (socket) => {
     socket.join(room);
     console.log(`[Socket] User ${userId} joined room ${room}.`);
 
+    // add userId to matchPlayers map
+    if (!matchPlayers.has(matchId)) {
+      matchPlayers.set(matchId, new Set());
+    }
+    matchPlayers.get(matchId).add(userId);
+
     // Send current timer status to the joining user
     const status = timerService.getMatchStatus(matchId);
     socket.emit("timer-update", { timeRemaining: status.timeRemaining });
 
-    // Check if this is the second player and start the match
-    const roomSize = io.sockets.adapter.rooms.get(room)?.size || 0;
-    if (roomSize === 2) {
+    const players = matchPlayers.get(matchId);
+
+    if (players.size === 2) {
+      // Randomly pick host
+      const playerArray = Array.from(players);
+      const hostUserId = playerArray[Math.floor(Math.random() * playerArray.length)];
+
       timerService.startMatch(matchId, io);
-      io.to(room).emit("match-started", { matchId });
+
+      io.to(room).emit("match-started", {
+        matchId,
+        hostUserId,
+      });
     }
   });
 
@@ -118,6 +133,15 @@ io.on("connection", (socket) => {
 
   socket.on("sell", ({ matchId, amount }) => {
     io.to(`match-${matchId}`).emit("sell-event", { userId, amount });
+  });
+
+  socket.on("stock-update", ({matchId, price, change, percentChange}) => {
+    // Only relay to other player (not back to the host)
+    socket.to(`match-${matchId}`).emit("stock-update", {
+      price,
+      change,
+      percentChange,
+    });
   });
 });
 

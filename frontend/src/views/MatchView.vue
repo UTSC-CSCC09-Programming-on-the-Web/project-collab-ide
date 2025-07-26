@@ -199,7 +199,9 @@ export default defineComponent({
 
       this.socket.on("connect", () => {
         console.log("Connected to server");
-        this.socket!.emit("join-match", matchId);
+        if (this.socket) {
+          this.socket.emit("join-match", matchId);
+        }
       });
 
       // Listen for timer updates from backend
@@ -208,12 +210,18 @@ export default defineComponent({
       });
 
       // Listen for match start
-      this.socket.on("match-started", (data: { matchId: string }) => {
-        this.isMatchActive = true;
-        this.isMatchEnded = false;
-        this.playersInMatch = 2;
-        this.getMarketData();
-      });
+      this.socket.on(
+        "match-started",
+        (data: { matchId: string; hostUserId: number }) => {
+          this.isMatchActive = true;
+          this.isMatchEnded = false;
+          this.playersInMatch = 2;
+          this.isHost = this.userStore.user?.id === data.hostUserId;
+          if (this.isHost) {
+            this.getMarketData();
+          }
+        }
+      );
 
       // Listen for match end
       this.socket.on("match-ended", (data: { timeRemaining: number }) => {
@@ -239,6 +247,15 @@ export default defineComponent({
           const sharesSold = amount / this.currentPrice;
           this.opponentCash += amount;
           this.opponentUserId = userId;
+        }
+      );
+
+      this.socket.on(
+        "stock-update",
+        (data: { price: number; change: number; percentChange: number }) => {
+          this.currentPrice = data.price;
+          this.priceChange = data.change;
+          this.percentChange = data.percentChange;
         }
       );
     },
