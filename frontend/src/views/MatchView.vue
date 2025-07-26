@@ -193,6 +193,35 @@ export default defineComponent({
     if (this.socket) this.socket.disconnect();
   },
   methods: {
+    updatePrice() {
+      if (!this.stockData.length) return;
+
+      const index = 180 - this.timeRemaining;
+      if (
+        index >= this.stockData.length ||
+        this.isMatchEnded ||
+        this.timeRemaining <= 0
+      ) {
+        this.isMatchEnded = true;
+        this.isMatchActive = false;
+        this.timeRemaining = 0;
+        return;
+      }
+
+      const candle = this.stockData[index];
+      const newPrice = candle.close;
+      const oldPrice = this.currentPrice;
+      this.currentPrice = newPrice;
+      this.priceChange = newPrice - oldPrice;
+      this.percentChange = ((newPrice - oldPrice) / oldPrice) * 100;
+
+      this.socket?.emit("stock-update", {
+        matchId: this.$route.params.id,
+        price: newPrice,
+        change: this.priceChange,
+        percentChange: this.percentChange,
+      });
+    },
     setupSocket(myUserId: number) {
       const matchId = this.$route.params.id;
       this.socket = io(process.env.VUE_APP_BACKEND_URL, {
@@ -207,20 +236,30 @@ export default defineComponent({
       // Listen for timer updates from backend
       this.socket.on("timer-update", (data: { timeRemaining: number }) => {
         this.timeRemaining = data.timeRemaining;
+        this.updatePrice();
       });
 
       // Listen for match start
-      this.socket.on("match-started", (data: { matchId: string, marketCombo: {
-    ticker: string;
-    market: string;
-    marketDate: string;
-  };  }) => {
-        console.log("match started");
-        this.isMatchActive = true;
-        this.isMatchEnded = false;
-        this.playersInMatch = 2;
-        this.getMarketData(data.marketCombo.market, data.marketCombo.ticker, data.marketCombo.marketDate);
-      });
+      this.socket.on(
+        "match-started",
+        (data: {
+          matchId: string;
+          marketCombo: {
+            ticker: string;
+            market: string;
+            marketDate: string;
+          };
+        }) => {
+          this.isMatchActive = true;
+          this.isMatchEnded = false;
+          this.playersInMatch = 2;
+          this.getMarketData(
+            data.marketCombo.market,
+            data.marketCombo.ticker,
+            data.marketCombo.marketDate
+          );
+        }
+      );
 
       // Listen for match end
       this.socket.on("match-ended", (data: { timeRemaining: number }) => {
@@ -287,58 +326,26 @@ export default defineComponent({
     },
     async getMarketData(market: string, ticker: string, marketDate: string) {
       if (!this.isMatchActive) return;
-      console.log("getting market data");
       try {
         const res = await axios.get(
           `${process.env.VUE_APP_BACKEND_URL}/api/market/candles`,
           {
-            params: { market: market, ticker: ticker, date: marketDate, page: 0, limit: 180 },
+            params: {
+              market: market,
+              ticker: ticker,
+              date: marketDate,
+              page: 0,
+              limit: 180,
+            },
             withCredentials: true,
           }
         );
         this.stockData = res.data.candles;
-        this.exchange = res.data.market;
-        this.ticker = res.data.ticker;
-        console.log(res);
+        this.exchange = market;
+        this.ticker = ticker;
         let index = 0;
         const maxDuration = 180000; // 3 minutes
         const startTime = Date.now();
-
-        const updatePrice = () => {
-          if (
-            index >= this.stockData.length ||
-            this.isMatchEnded ||
-            Date.now() - startTime >= maxDuration
-          ) {
-            this.isMatchEnded = true;
-            this.isMatchActive = false;
-            this.timeRemaining = 0;
-            return;
-          }
-
-          const candle = this.stockData[index];
-          const newPrice = candle.close;
-          const oldPrice = this.currentPrice;
-          this.currentPrice = newPrice;
-          this.priceChange = newPrice - oldPrice;
-          this.percentChange = ((newPrice - oldPrice) / oldPrice) * 100;
-
-          // Emit to server for sync
-          this.socket?.emit("stock-update", {
-            matchId: this.$route.params.id,
-            price: newPrice,
-            change: this.priceChange,
-            percentChange: this.percentChange,
-          });
-
-          index++;
-
-          // const randomDelay = Math.floor(Math.random() * 10 + 1) * 1000;
-          this.tickInterval = setTimeout(updatePrice, 1000);
-        };
-
-        // Kick off the first update
-        updatePrice();
       } catch (err: any) {
         console.error(err.response?.data || err.message);
       }

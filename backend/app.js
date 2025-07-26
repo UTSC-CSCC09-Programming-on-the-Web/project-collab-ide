@@ -107,7 +107,6 @@ io.on("connection", (socket) => {
     // Check if this is the second player and start the match
     const roomSize = io.sockets.adapter.rooms.get(room)?.size || 0;
     if (roomSize === 2) {
-        console.log("here");
       getRandomMarketCombo().then((marketCombo) => {
         timerService.startMatch(matchId, io);
         io.to(room).emit("match-started", { matchId, marketCombo });
