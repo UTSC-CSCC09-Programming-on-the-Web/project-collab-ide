@@ -126,7 +126,7 @@ io.on("connection", (socket) => {
     const roomSize = io.sockets.adapter.rooms.get(room)?.size || 0;
     if (roomSize === 2) {
       getRandomMarketCombo().then((marketCombo) => {
-        timerService.startMatch(matchId, io);
+        matchService.startMatch(matchId, io);
         io.to(room).emit("match-started", { matchId, marketCombo });
       });
     }
