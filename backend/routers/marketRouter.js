@@ -66,12 +66,12 @@ marketRouter.get("/stocks", async (req, res) => {
   }
 });
 
-// GET /api/market/candles?ticker=AAPL&date=YYYY-MM-DD&page=0&limit=60 (paginated)
+// GET /api/market/candles?market=NASDAQ&ticker=AAPL&date=YYYY-MM-DD&page=0&limit=60 (paginated)
 marketRouter.get("/candles", async (req, res) => {
-  const { ticker, date } = req.query;
+  const { market, ticker, date } = req.query;
   let { page, limit } = req.query;
 
-  if (!ticker || !date) {
+  if (!market || !ticker || !date) {
     return res.status(400).json({
       error: "Invalid query parameters: ticker and date is required.",
     });
@@ -84,6 +84,7 @@ marketRouter.get("/candles", async (req, res) => {
   try {
     const candles = await MarketCandle.findAll({
       where: {
+        market: market.toUpperCase(),
         ticker: ticker.toUpperCase(),
         date,
       },

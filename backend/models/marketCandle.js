@@ -36,6 +36,10 @@ export const MarketCandle = sequelize.define(
       type: DataTypes.DOUBLE,
       allowNull: false,
     },
+    market: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
   },
   {
     tableName: "MarketCandles",
