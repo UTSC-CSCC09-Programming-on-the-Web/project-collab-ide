@@ -285,7 +285,7 @@ export default defineComponent({
         const res = await axios.get(
           `${process.env.VUE_APP_BACKEND_URL}/api/market/candles`,
           {
-            params: { ticker: "AAPL", date: "2023-08-02", page: 0, limit: 180 },
+            params: { market: "NASDAQ", ticker: "AAPL", date: "2023-08-02", page: 0, limit: 180 },
             withCredentials: true,
           }
         );
