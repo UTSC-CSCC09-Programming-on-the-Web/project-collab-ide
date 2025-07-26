@@ -86,6 +86,7 @@ app.use("/api/queue", queueRouter);
 app.use("/api/match", matchRouter);
 app.use("/api/market", marketRouter);
 
+const matchPlayers = new Map();
 io.on("connection", (socket) => {
   console.log("Session:", socket.request.session);
   const userId = socket.request?.session?.userId;
@@ -102,6 +103,12 @@ io.on("connection", (socket) => {
     console.log(`[Socket] User ${userId} joined room ${room}.`);
 
     try {
+      // add userId to matchPlayers map
+      if (!matchPlayers.has(matchId)) {
+        matchPlayers.set(matchId, new Set());
+      }
+      matchPlayers.get(matchId).add(userId);
+      
       // Initialize player portfolio
       const initResult = matchService.initializePlayer(matchId, userId);
       if (initResult && !initResult.success) {
@@ -122,11 +129,18 @@ io.on("connection", (socket) => {
         });
       }
 
-      // When there are 2 players, send player information to all players
-      const socketsInRoom = await io.in(room).fetchSockets();
-      const roomSize = socketsInRoom.length;
-      if (roomSize === 2) {
+      const players = matchPlayers.get(matchId);
+      if (players.size === 2) {
+        // Randomly pick host
+        const playerArray = Array.from(players);
+        const hostUserId =
+          playerArray[Math.floor(Math.random() * playerArray.length)];
+
         getRandomMarketCombo().then(async (marketCombo) => {
+          matchService.startMatch(matchId, io);
+
+          // Get all sockets in the room
+          const socketsInRoom = await io.in(room).fetchSockets();
           const allUserIds = [];
           for (const socketInRoom of socketsInRoom) {
             const roomUserId = socketInRoom.request?.session?.userId;
@@ -147,9 +161,11 @@ io.on("connection", (socket) => {
             });
           }
 
-          // Start the match
-          matchService.startMatch(matchId, io);
-          io.to(room).emit("match-started", { matchId, marketCombo });
+          io.to(room).emit("match-started", {
+            matchId,
+            hostUserId,
+            marketCombo,
+          });
         });
       }
     } catch (error) {
