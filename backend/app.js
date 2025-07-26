@@ -7,6 +7,7 @@ import bodyParser from "body-parser";
 import { checkoutRouter } from "./routers/checkoutRouter.js";
 import cookieParser from "cookie-parser";
 import { sequelize } from "./datasource.js";
+import { User } from "./models/user.js";
 import { statusRouter } from "./routers/statusRouter.js";
 import { authRouter } from "./routers/authRouter.js";
 import { userRouter } from "./routers/userRouter.js";
@@ -95,40 +96,64 @@ io.on("connection", (socket) => {
 
   console.log(`[Socket] User ${userId} connected.`);
 
-  socket.on("join-match", (matchId) => {
+  socket.on("join-match", async (matchId) => {
     const room = `match-${matchId}`;
     socket.join(room);
     console.log(`[Socket] User ${userId} joined room ${room}.`);
 
-    // Initialize player portfolio
-    const initResult = matchService.initializePlayer(matchId, userId);
-    if (initResult && !initResult.success) {
-      socket.emit("join-error", { error: initResult.error });
-      return;
-    }
+    try {
+      // Initialize player portfolio
+      const initResult = matchService.initializePlayer(matchId, userId);
+      if (initResult && !initResult.success) {
+        socket.emit("join-error", { error: initResult.error });
+        return;
+      }
 
-    // Send current timer status to the joining user
-    const status = matchService.getMatchStatus(matchId);
-    socket.emit("timer-update", { timeRemaining: status.timeRemaining });
+      // Send current timer status to the joining user
+      const status = matchService.getMatchStatus(matchId);
+      socket.emit("timer-update", { timeRemaining: status.timeRemaining });
 
-    // Send initial portfolio data
-    const playerData = matchService.getPlayerData
-      ? matchService.getPlayerData(matchId, userId)
-      : null;
-    if (playerData) {
-      socket.emit("portfolio-update", {
-        cash: playerData.cash,
-        shares: playerData.shares,
-      });
-    }
+      // Send initial portfolio data
+      const playerData = matchService.getPlayerData(matchId, userId);
+      if (playerData) {
+        socket.emit("portfolio-update", {
+          cash: playerData.cash,
+          shares: playerData.shares,
+        });
+      }
 
-    // Check if this is the second player and start the match
-    const roomSize = io.sockets.adapter.rooms.get(room)?.size || 0;
-    if (roomSize === 2) {
-      getRandomMarketCombo().then((marketCombo) => {
-        matchService.startMatch(matchId, io);
-        io.to(room).emit("match-started", { matchId, marketCombo });
-      });
+      // When there are 2 players, send player information to all players
+      const socketsInRoom = await io.in(room).fetchSockets();
+      const roomSize = socketsInRoom.length;
+      if (roomSize === 2) {
+        getRandomMarketCombo().then(async (marketCombo) => {
+          const allUserIds = [];
+          for (const socketInRoom of socketsInRoom) {
+            const roomUserId = socketInRoom.request?.session?.userId;
+            if (roomUserId) {
+              allUserIds.push(roomUserId);
+            }
+          }
+          const allUsers = await User.findAll({
+            where: { id: allUserIds },
+            attributes: ["id", "username"],
+          });
+
+          // Send player info to all players
+          for (const userInfo of allUsers) {
+            io.to(room).emit("player-info", {
+              userId: userInfo.id,
+              username: userInfo.username,
+            });
+          }
+
+          // Start the match
+          matchService.startMatch(matchId, io);
+          io.to(room).emit("match-started", { matchId, marketCombo });
+        });
+      }
+    } catch (error) {
+      console.error("Error in join-match handler:", error);
     }
   });
 
