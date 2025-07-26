@@ -85,6 +85,7 @@ app.use("/api/queue", queueRouter);
 app.use("/api/match", matchRouter);
 app.use("/api/market", marketRouter);
 
+const matchPlayers = new Map();
 io.on("connection", (socket) => {
   console.log("Session:", socket.request.session);
   const userId = socket.request?.session?.userId;
@@ -100,6 +101,11 @@ io.on("connection", (socket) => {
     socket.join(room);
     console.log(`[Socket] User ${userId} joined room ${room}.`);
 
+    // add userId to matchPlayers map
+    if (!matchPlayers.has(matchId)) {
+      matchPlayers.set(matchId, new Set());
+    }
+    matchPlayers.get(matchId).add(userId);
     // Initialize player portfolio
     const initResult = matchService.initializePlayer(matchId, userId);
     if (initResult && !initResult.success) {
@@ -111,24 +117,34 @@ io.on("connection", (socket) => {
     const status = matchService.getMatchStatus(matchId);
     socket.emit("timer-update", { timeRemaining: status.timeRemaining });
 
-    // Send initial portfolio data
-    const playerData = matchService.getPlayerData
-      ? matchService.getPlayerData(matchId, userId)
-      : null;
-    if (playerData) {
-      socket.emit("portfolio-update", {
-        cash: playerData.cash,
-        shares: playerData.shares,
-      });
-    }
+    const players = matchPlayers.get(matchId);
 
-    // Check if this is the second player and start the match
-    const roomSize = io.sockets.adapter.rooms.get(room)?.size || 0;
-    if (roomSize === 2) {
+    if (players.size === 2) {
+      // Randomly pick host
+      const playerArray = Array.from(players);
+      const hostUserId =
+        playerArray[Math.floor(Math.random() * playerArray.length)];
+
       getRandomMarketCombo().then((marketCombo) => {
         matchService.startMatch(matchId, io);
-        io.to(room).emit("match-started", { matchId, marketCombo });
+
+        io.to(room).emit("match-started", {
+          matchId,
+          hostUserId,
+          marketCombo,
+        });
       });
+
+      // Send initial portfolio data
+      const playerData = matchService.getPlayerData
+        ? matchService.getPlayerData(matchId, userId)
+        : null;
+      if (playerData) {
+        socket.emit("portfolio-update", {
+          cash: playerData.cash,
+          shares: playerData.shares,
+        });
+      }
     }
   });
 

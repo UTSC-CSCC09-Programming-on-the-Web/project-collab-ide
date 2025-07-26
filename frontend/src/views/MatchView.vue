@@ -220,7 +220,7 @@ export default defineComponent({
 
       this.socket.on("connect", () => {
         console.log("Connected to server");
-        this.socket!.emit("join-match", matchId);
+        this.socket?.emit("join-match", matchId);
       });
 
       // Listen for timer updates from backend
@@ -267,6 +267,7 @@ export default defineComponent({
         "match-started",
         (data: {
           matchId: string;
+          hostUserId: number;
           marketCombo: {
             ticker: string;
             market: string;
@@ -276,11 +277,19 @@ export default defineComponent({
           this.isMatchActive = true;
           this.isMatchEnded = false;
           this.playersInMatch = 2;
-          this.getMarketData(
-            data.marketCombo.market,
-            data.marketCombo.ticker,
-            data.marketCombo.marketDate
-          );
+
+          this.isHost = this.userStore.user?.id === data.hostUserId;
+
+          if (this.isHost) {
+            this.getMarketData(
+              data.marketCombo.market,
+              data.marketCombo.ticker,
+              data.marketCombo.marketDate
+            );
+          } else {
+            this.exchange = data.marketCombo.market;
+            this.ticker = data.marketCombo.ticker;
+          }
         }
       );
 
@@ -308,6 +317,15 @@ export default defineComponent({
           const sharesSold = amount / this.currentPrice;
           this.opponentCash += amount;
           this.opponentUserId = userId;
+        }
+      );
+
+      this.socket.on(
+        "price-update",
+        (data: { price: number; change: number; percentChange: number }) => {
+          this.currentPrice = data.price;
+          this.priceChange = data.change;
+          this.percentChange = data.percentChange;
         }
       );
     },
@@ -393,7 +411,7 @@ export default defineComponent({
 
           index++;
 
-          const randomDelay = Math.floor(Math.random() * 10 + 1) * 1000;
+          const randomDelay = Math.floor(Math.random() * 3 + 1) * 1000;
           this.tickInterval = setTimeout(updatePrice, randomDelay);
         };
 
