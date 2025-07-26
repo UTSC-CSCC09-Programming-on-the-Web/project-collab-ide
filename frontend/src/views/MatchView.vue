@@ -220,9 +220,7 @@ export default defineComponent({
 
       this.socket.on("connect", () => {
         console.log("Connected to server");
-        if (this.socket) {
-          this.socket.emit("join-match", matchId);
-        }
+        this.socket?.emit("join-match", matchId);
       });
 
       // Listen for timer updates from backend
