@@ -12,7 +12,7 @@ import { authRouter } from "./routers/authRouter.js";
 import { userRouter } from "./routers/userRouter.js";
 import { queueRouter } from "./routers/queueRouter.js";
 import { matchRouter } from "./routers/matchRouter.js";
-import { marketRouter } from "./routers/marketRouter.js";
+import { marketRouter, getRandomMarketCombo } from "./routers/marketRouter.js";
 import { timerService } from "./services/timerService.js";
 import jwt from "jsonwebtoken";
 
@@ -107,8 +107,11 @@ io.on("connection", (socket) => {
     // Check if this is the second player and start the match
     const roomSize = io.sockets.adapter.rooms.get(room)?.size || 0;
     if (roomSize === 2) {
-      timerService.startMatch(matchId, io);
-      io.to(room).emit("match-started", { matchId });
+        console.log("here");
+      getRandomMarketCombo().then((marketCombo) => {
+        timerService.startMatch(matchId, io);
+        io.to(room).emit("match-started", { matchId, marketCombo });
+      });
     }
   });
 

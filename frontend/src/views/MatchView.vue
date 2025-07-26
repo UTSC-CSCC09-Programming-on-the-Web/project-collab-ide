@@ -102,8 +102,8 @@
       </div>
 
       <StockDisplay
-        exchange="NASDAQ"
-        ticker="AAPL"
+        :exchange="exchange"
+        :ticker="ticker"
         :price="currentPrice"
         :change="priceChange"
         :percent-change="percentChange"
@@ -166,6 +166,8 @@ export default defineComponent({
       isHost: false,
 
       // Stock Data
+      exchange: "NASDAQ",
+      ticker: "AAPL",
       currentPrice: 179.76,
       priceChange: 2.85,
       percentChange: 1.61,
@@ -208,11 +210,16 @@ export default defineComponent({
       });
 
       // Listen for match start
-      this.socket.on("match-started", (data: { matchId: string }) => {
+      this.socket.on("match-started", (data: { matchId: string, marketCombo: {
+    ticker: string;
+    market: string;
+    marketDate: string;
+  };  }) => {
+        console.log("match started");
         this.isMatchActive = true;
         this.isMatchEnded = false;
         this.playersInMatch = 2;
-        this.getMarketData();
+        this.getMarketData(data.marketCombo.market, data.marketCombo.ticker, data.marketCombo.marketDate);
       });
 
       // Listen for match end
@@ -278,19 +285,21 @@ export default defineComponent({
     goHome() {
       this.$router.push("/home");
     },
-    async getMarketData() {
+    async getMarketData(market: string, ticker: string, marketDate: string) {
       if (!this.isMatchActive) return;
-
+      console.log("getting market data");
       try {
         const res = await axios.get(
           `${process.env.VUE_APP_BACKEND_URL}/api/market/candles`,
           {
-            params: { market: "NASDAQ", ticker: "AAPL", date: "2023-08-02", page: 0, limit: 180 },
+            params: { market: market, ticker: ticker, date: marketDate, page: 0, limit: 180 },
             withCredentials: true,
           }
         );
         this.stockData = res.data.candles;
-
+        this.exchange = res.data.market;
+        this.ticker = res.data.ticker;
+        console.log(res);
         let index = 0;
         const maxDuration = 180000; // 3 minutes
         const startTime = Date.now();
@@ -324,8 +333,8 @@ export default defineComponent({
 
           index++;
 
-          const randomDelay = Math.floor(Math.random() * 10 + 1) * 1000;
-          this.tickInterval = setTimeout(updatePrice, randomDelay);
+          // const randomDelay = Math.floor(Math.random() * 10 + 1) * 1000;
+          this.tickInterval = setTimeout(updatePrice, 1000);
         };
 
         // Kick off the first update
