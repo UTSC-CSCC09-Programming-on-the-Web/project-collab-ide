@@ -126,7 +126,7 @@ io.on("connection", (socket) => {
         playerArray[Math.floor(Math.random() * playerArray.length)];
 
       getRandomMarketCombo().then((marketCombo) => {
-        matchService.startMatch(matchId, io); 
+        matchService.startMatch(matchId, io);
 
         io.to(room).emit("match-started", {
           matchId,
