@@ -36,7 +36,8 @@ def drop_and_create_tables(cur, conn):
             high DOUBLE PRECISION NOT NULL,
             low DOUBLE PRECISION NOT NULL,
             close DOUBLE PRECISION NOT NULL,
-            volume DOUBLE PRECISION NOT NULL
+            volume DOUBLE PRECISION NOT NULL,
+            market TEXT NOT NULL
         );
     """)
     cur.execute("""
@@ -58,7 +59,7 @@ def seed_market_candles(cur, conn):
         with open(filepath, 'r') as f:
             next(f)
             cur.copy_expert(
-                sql="""COPY "MarketCandles" (ticker, date, timestamp, open, high, low, close, volume) FROM STDIN WITH CSV""",
+                sql="""COPY "MarketCandles" (ticker, date, timestamp, open, high, low, close, volume, market) FROM STDIN WITH CSV""",
                 file=f
             )
         conn.commit()

@@ -112,8 +112,8 @@
       </div>
 
       <StockDisplay
-        exchange="NASDAQ"
-        ticker="AAPL"
+        :exchange="exchange"
+        :ticker="ticker"
         :price="currentPrice"
         :change="priceChange"
         :percent-change="percentChange"
@@ -177,6 +177,8 @@ export default defineComponent({
       isHost: false,
 
       // Stock Data
+      exchange: "NASDAQ",
+      ticker: "AAPL",
       currentPrice: 179.76,
       priceChange: 2.85,
       percentChange: 1.61,
@@ -261,12 +263,26 @@ export default defineComponent({
       );
 
       // Listen for match start
-      this.socket.on("match-started", (data: { matchId: string }) => {
-        this.isMatchActive = true;
-        this.isMatchEnded = false;
-        this.playersInMatch = 2;
-        this.getMarketData();
-      });
+      this.socket.on(
+        "match-started",
+        (data: {
+          matchId: string;
+          marketCombo: {
+            ticker: string;
+            market: string;
+            marketDate: string;
+          };
+        }) => {
+          this.isMatchActive = true;
+          this.isMatchEnded = false;
+          this.playersInMatch = 2;
+          this.getMarketData(
+            data.marketCombo.market,
+            data.marketCombo.ticker,
+            data.marketCombo.marketDate
+          );
+        }
+      );
 
       // Listen for match end
       this.socket.on("match-ended", (data: { timeRemaining: number }) => {
@@ -325,19 +341,25 @@ export default defineComponent({
     goHome() {
       this.$router.push("/home");
     },
-    async getMarketData() {
+    async getMarketData(market: string, ticker: string, marketDate: string) {
       if (!this.isMatchActive) return;
-
       try {
         const res = await axios.get(
           `${process.env.VUE_APP_BACKEND_URL}/api/market/candles`,
           {
-            params: { ticker: "AAPL", date: "2023-08-02", page: 0, limit: 180 },
+            params: {
+              market: market,
+              ticker: ticker,
+              date: marketDate,
+              page: 0,
+              limit: 180,
+            },
             withCredentials: true,
           }
         );
         this.stockData = res.data.candles;
-
+        this.exchange = market;
+        this.ticker = ticker;
         let index = 0;
         const maxDuration = 180000; // 3 minutes
         const startTime = Date.now();
