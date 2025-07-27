@@ -4,7 +4,17 @@
     <div
       class="w-1/2 bg-[#125C87] text-white flex flex-col items-center justify-center space-y-4"
     >
-      <h2 class="text-4xl font-bold">YOU</h2>
+      <div class="text-center">
+        <h1
+          v-if="isMatchEnded"
+          class="text-5xl font-bold mb-2"
+          :class="matchResultClass"
+        >
+          {{ matchResultText }}
+        </h1>
+        <h2 class="text-4xl font-bold">YOU</h2>
+      </div>
+
       <div class="space-y-1 w-[300px]">
         <div class="flex justify-between">
           <span>CASH</span>
@@ -26,19 +36,17 @@
           >
         </div>
       </div>
-      <div class="space-y-2">
+      <div v-if="isMatchActive && !isMatchEnded" class="space-y-2">
         <div class="flex space-x-2">
           <input
             v-model="buyInput"
             type="text"
-            :disabled="!isMatchActive || isMatchEnded"
-            class="px-2 py-1 rounded text-black disabled:opacity-50"
+            class="px-2 py-1 rounded text-black"
             placeholder="$"
           />
           <button
             @click="buyStock"
-            :disabled="!isMatchActive || isMatchEnded"
-            class="bg-[#782ACC] w-28 px-4 py-1 rounded text-white disabled:opacity-50"
+            class="bg-[#782ACC] w-28 px-4 py-1 rounded text-white hover:bg-[#6520a8] transition-colors"
           >
             BUY
           </button>
@@ -47,14 +55,12 @@
           <input
             v-model="sellInput"
             type="text"
-            :disabled="!isMatchActive || isMatchEnded"
-            class="px-2 py-1 rounded text-black disabled:opacity-50"
+            class="px-2 py-1 rounded text-black"
             placeholder="$"
           />
           <button
             @click="sellStock"
-            :disabled="!isMatchActive || isMatchEnded"
-            class="bg-[#782ACC] w-28 px-4 py-1 rounded text-white disabled:opacity-50"
+            class="bg-[#782ACC] w-28 px-4 py-1 rounded text-white hover:bg-[#6520a8] transition-colors"
           >
             SELL
           </button>
@@ -137,10 +143,6 @@
         Waiting for players... ({{ playersInMatch }}/2)
       </div>
 
-      <div v-if="isMatchActive" class="text-green-500 text-xl mb-4">
-        Match Active!
-      </div>
-
       <StockDisplay
         :exchange="exchange"
         :ticker="ticker"
@@ -148,31 +150,13 @@
         :change="priceChange"
         :percent-change="percentChange"
       />
-    </div>
-
-    <!-- Match End Overlay -->
-    <div
-      v-if="isMatchEnded"
-      class="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
-    >
-      <div class="bg-white p-8 rounded-lg text-center max-w-md">
-        <h2 class="text-4xl font-bold mb-4 text-blue-600">Match Ended!</h2>
-        <div class="space-y-2 mb-6">
-          <p>
-            Your Total: ${{
-              (playerCash + playerShares * currentPrice).toFixed(2)
-            }}
-          </p>
-          <p>Opponent Total: ${{ opponentTotalValue.toFixed(2) }}</p>
-        </div>
-        <div class="space-x-4">
-          <button
-            @click="goHome"
-            class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded"
-          >
-            Back to Home
-          </button>
-        </div>
+      <div v-if="isMatchEnded" class="mt-8">
+        <button
+          @click="goHome"
+          class="bg-[#782ACC] hover:bg-[#6520a8] text-white font-bold px-16 py-4 rounded-lg text-xl transition-colors shadow-lg"
+        >
+          Leave Match
+        </button>
       </div>
     </div>
   </div>
@@ -237,7 +221,32 @@ export default defineComponent({
         return "Waiting for opponent...";
       }
     },
+
+    matchResultText(): string {
+      if (!this.isMatchEnded) return "";
+
+      if (this.playerTotalValue > this.opponentTotalValue) {
+        return "WINNER";
+      } else if (this.playerTotalValue < this.opponentTotalValue) {
+        return "LOSER";
+      } else {
+        return "TIE";
+      }
+    },
+
+    matchResultClass(): string {
+      if (!this.isMatchEnded) return "";
+
+      if (this.playerTotalValue > this.opponentTotalValue) {
+        return "text-green-400 animate-pulse";
+      } else if (this.playerTotalValue < this.opponentTotalValue) {
+        return "text-red-400";
+      } else {
+        return "text-yellow-400";
+      }
+    },
   },
+
   mounted() {
     watch(
       () => this.userStore.user,
