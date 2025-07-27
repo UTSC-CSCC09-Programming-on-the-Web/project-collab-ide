@@ -83,6 +83,38 @@
           <span class="font-bold">{{ opponentTotalValue.toFixed(2) }} USD</span>
         </div>
       </div>
+      <div v-if="isMatchActive && !isMatchEnded" class="space-y-2">
+        <div class="flex space-x-2">
+          <input
+            :value="opponentBuyInput"
+            type="text"
+            disabled
+            class="px-2 py-1 rounded text-black bg-white cursor-not-allowed"
+            placeholder="$"
+          />
+          <button
+            disabled
+            class="bg-[#782ACC] w-28 px-4 py-1 rounded text-white cursor-not-allowed opacity-75"
+          >
+            BUY
+          </button>
+        </div>
+        <div class="flex space-x-2">
+          <input
+            :value="opponentSellInput"
+            type="text"
+            disabled
+            class="px-2 py-1 rounded text-black bg-white cursor-not-allowed"
+            placeholder="$"
+          />
+          <button
+            disabled
+            class="bg-[#782ACC] w-28 px-4 py-1 rounded text-white cursor-not-allowed opacity-75"
+          >
+            SELL
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Center Overlay (Stock Display + Timer) -->
@@ -171,6 +203,8 @@ export default defineComponent({
       opponentUsername: null as string | null,
       opponentCash: 100.0,
       opponentShares: 0.0,
+      opponentBuyInput: "",
+      opponentSellInput: "",
       playerCash: 100.0,
       playerShares: 0,
       isHost: false,
@@ -263,12 +297,14 @@ export default defineComponent({
           userId,
           type,
           amount,
+          inputValue,
           cash,
           shares,
         }: {
           userId: number;
           type: string;
           amount: number;
+          inputValue?: string;
           cash: number;
           shares: number;
         }) => {
@@ -278,6 +314,19 @@ export default defineComponent({
           this.opponentUserId = userId;
           this.opponentCash = cash;
           this.opponentShares = shares;
+
+          // Show how much opponent bought/sold for 2 seconds
+          if (type === "buy" && inputValue) {
+            this.opponentBuyInput = inputValue;
+            setTimeout(() => {
+              this.opponentBuyInput = "";
+            }, 2000);
+          } else if (type === "sell" && inputValue) {
+            this.opponentSellInput = inputValue;
+            setTimeout(() => {
+              this.opponentSellInput = "";
+            }, 2000);
+          }
         }
       );
 

@@ -174,17 +174,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("buy", ({ matchId, amount }) => {
-    if (!matchService.processBuy) {
-      socket.to(`match-${matchId}`).emit("opponent-trade", {
-        userId,
-        type: "buy",
-        amount,
-        cash: 100 - amount,
-        shares: amount / 179.76,
-      });
-      return;
-    }
-
     const result = matchService.processBuy(matchId, userId, amount);
     if (result.success) {
       // Send updated portfolio to the buyer
@@ -198,6 +187,7 @@ io.on("connection", (socket) => {
         userId,
         type: "buy",
         amount,
+        inputValue: amount.toString(),
         cash: result.playerData.cash,
         shares: result.playerData.shares,
       });
@@ -207,17 +197,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("sell", ({ matchId, amount }) => {
-    if (!matchService.processSell) {
-      socket.to(`match-${matchId}`).emit("opponent-trade", {
-        userId,
-        type: "sell",
-        amount,
-        cash: 100 + amount,
-        shares: 0,
-      });
-      return;
-    }
-
     const result = matchService.processSell(matchId, userId, amount);
     if (result.success) {
       // Send updated portfolio to the seller
@@ -231,6 +210,7 @@ io.on("connection", (socket) => {
         userId,
         type: "sell",
         amount,
+        inputValue: amount.toString(),
         cash: result.playerData.cash,
         shares: result.playerData.shares,
       });
