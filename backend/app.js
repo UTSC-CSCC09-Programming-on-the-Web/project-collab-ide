@@ -108,7 +108,7 @@ io.on("connection", (socket) => {
         matchPlayers.set(matchId, new Set());
       }
       matchPlayers.get(matchId).add(userId);
-      
+
       // Initialize player portfolio
       const initResult = matchService.initializePlayer(matchId, userId);
       if (initResult && !initResult.success) {
