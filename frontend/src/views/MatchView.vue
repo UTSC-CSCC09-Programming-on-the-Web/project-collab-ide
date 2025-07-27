@@ -66,9 +66,7 @@
     <div
       class="w-1/2 bg-[#252525] text-white flex flex-col items-center justify-center space-y-4"
     >
-      <h2 class="text-2xl font-bold">
-        OPPONENT: {{ opponentUserId ?? "..." }}
-      </h2>
+      <h2 class="text-4xl font-bold">{{ opponentDisplayName }}</h2>
       <div class="space-y-1 w-[300px]">
         <div class="flex justify-between">
           <span>CASH</span>
@@ -170,6 +168,7 @@ export default defineComponent({
 
       // Player & Opponent Data
       opponentUserId: null as number | null,
+      opponentUsername: null as string | null,
       opponentCash: 100.0,
       opponentShares: 0.0,
       playerCash: 100.0,
@@ -194,6 +193,15 @@ export default defineComponent({
     },
     opponentTotalValue(): number {
       return this.opponentCash + this.opponentShares * this.currentPrice;
+    },
+    opponentDisplayName(): string {
+      if (this.opponentUsername) {
+        return this.opponentUsername;
+      } else if (this.opponentUserId) {
+        return `User ${this.opponentUserId}`;
+      } else {
+        return "Waiting for opponent...";
+      }
     },
   },
   mounted() {
@@ -222,6 +230,17 @@ export default defineComponent({
         console.log("Connected to server");
         this.socket?.emit("join-match", matchId);
       });
+
+      // Update opponent information when they join
+      this.socket.on(
+        "player-info",
+        ({ userId, username }: { userId: number; username: string }) => {
+          if (userId !== myUserId) {
+            this.opponentUserId = userId;
+            this.opponentUsername = username;
+          }
+        }
+      );
 
       // Listen for timer updates from backend
       this.socket.on("timer-update", (data: { timeRemaining: number }) => {
@@ -298,6 +317,11 @@ export default defineComponent({
         this.isMatchEnded = true;
         this.isMatchActive = false;
         this.timeRemaining = 0;
+
+        if (this.tickInterval) {
+          clearTimeout(this.tickInterval);
+          this.tickInterval = null;
+        }
       });
 
       // Existing trading events
@@ -379,18 +403,9 @@ export default defineComponent({
         this.exchange = market;
         this.ticker = ticker;
         let index = 0;
-        const maxDuration = 180000; // 3 minutes
-        const startTime = Date.now();
 
         const updatePrice = () => {
-          if (
-            index >= this.stockData.length ||
-            this.isMatchEnded ||
-            Date.now() - startTime >= maxDuration
-          ) {
-            this.isMatchEnded = true;
-            this.isMatchActive = false;
-            this.timeRemaining = 0;
+          if (index >= this.stockData.length || this.isMatchEnded) {
             return;
           }
 
@@ -411,11 +426,14 @@ export default defineComponent({
 
           index++;
 
-          const randomDelay = Math.floor(Math.random() * 3 + 1) * 1000;
-          this.tickInterval = setTimeout(updatePrice, randomDelay);
+          // Continue updating if match is still active
+          if (!this.isMatchEnded) {
+            const randomDelay = Math.floor(Math.random() * 3 + 1) * 1000;
+            this.tickInterval = setTimeout(updatePrice, randomDelay);
+          }
         };
 
-        // Kick off the first update
+        // Kick off the first price update
         updatePrice();
       } catch (err: any) {
         console.error(err.response?.data || err.message);

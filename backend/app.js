@@ -7,6 +7,7 @@ import bodyParser from "body-parser";
 import { checkoutRouter } from "./routers/checkoutRouter.js";
 import cookieParser from "cookie-parser";
 import { sequelize } from "./datasource.js";
+import { User } from "./models/user.js";
 import { statusRouter } from "./routers/statusRouter.js";
 import { authRouter } from "./routers/authRouter.js";
 import { userRouter } from "./routers/userRouter.js";
@@ -96,55 +97,79 @@ io.on("connection", (socket) => {
 
   console.log(`[Socket] User ${userId} connected.`);
 
-  socket.on("join-match", (matchId) => {
+  socket.on("join-match", async (matchId) => {
     const room = `match-${matchId}`;
     socket.join(room);
     console.log(`[Socket] User ${userId} joined room ${room}.`);
 
-    // add userId to matchPlayers map
-    if (!matchPlayers.has(matchId)) {
-      matchPlayers.set(matchId, new Set());
-    }
-    matchPlayers.get(matchId).add(userId);
-    // Initialize player portfolio
-    const initResult = matchService.initializePlayer(matchId, userId);
-    if (initResult && !initResult.success) {
-      socket.emit("join-error", { error: initResult.error });
-      return;
-    }
+    try {
+      // add userId to matchPlayers map
+      if (!matchPlayers.has(matchId)) {
+        matchPlayers.set(matchId, new Set());
+      }
+      matchPlayers.get(matchId).add(userId);
 
-    // Send current timer status to the joining user
-    const status = matchService.getMatchStatus(matchId);
-    socket.emit("timer-update", { timeRemaining: status.timeRemaining });
+      // Initialize player portfolio
+      const initResult = matchService.initializePlayer(matchId, userId);
+      if (initResult && !initResult.success) {
+        socket.emit("join-error", { error: initResult.error });
+        return;
+      }
 
-    const players = matchPlayers.get(matchId);
-
-    if (players.size === 2) {
-      // Randomly pick host
-      const playerArray = Array.from(players);
-      const hostUserId =
-        playerArray[Math.floor(Math.random() * playerArray.length)];
-
-      getRandomMarketCombo().then((marketCombo) => {
-        matchService.startMatch(matchId, io);
-
-        io.to(room).emit("match-started", {
-          matchId,
-          hostUserId,
-          marketCombo,
-        });
-      });
+      // Send current timer status to the joining user
+      const status = matchService.getMatchStatus(matchId);
+      socket.emit("timer-update", { timeRemaining: status.timeRemaining });
 
       // Send initial portfolio data
-      const playerData = matchService.getPlayerData
-        ? matchService.getPlayerData(matchId, userId)
-        : null;
+      const playerData = matchService.getPlayerData(matchId, userId);
       if (playerData) {
         socket.emit("portfolio-update", {
           cash: playerData.cash,
           shares: playerData.shares,
         });
       }
+
+      const players = matchPlayers.get(matchId);
+      if (players.size === 2) {
+        // Randomly pick host
+        const playerArray = Array.from(players);
+        const hostUserId =
+          playerArray[Math.floor(Math.random() * playerArray.length)];
+
+        getRandomMarketCombo().then(async (marketCombo) => {
+          matchService.startMatch(matchId, io);
+
+          // Get all sockets in the room
+          const socketsInRoom = await io.in(room).fetchSockets();
+          const allUserIds = [];
+          for (const socketInRoom of socketsInRoom) {
+            const roomUserId = socketInRoom.request?.session?.userId;
+            if (roomUserId) {
+              allUserIds.push(roomUserId);
+            }
+          }
+          const allUsers = await User.findAll({
+            where: { id: allUserIds },
+            attributes: ["id", "username"],
+          });
+
+          // Send player info to all players
+          for (const userInfo of allUsers) {
+            io.to(room).emit("player-info", {
+              userId: userInfo.id,
+              username: userInfo.username,
+            });
+          }
+
+          io.to(room).emit("match-started", {
+            matchId,
+            hostUserId,
+            marketCombo,
+          });
+        });
+      }
+    } catch (error) {
+      console.error("Error in join-match handler:", error);
     }
   });
 
