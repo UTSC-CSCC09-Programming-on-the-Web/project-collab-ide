@@ -6,50 +6,7 @@ import { Sequelize } from "sequelize";
 export const marketRouter = Router();
 
 // TODO: use validation helpers to validate query params
-
-// GET /api/market/fact?date=YYYY-MM-DD
-// TODO: Remove this and other unused endpoints if we don't need to use
-// Currently a bit outdated but I can update this quickly if we end up needing it.
-marketRouter.get("/fact", async (req, res) => {
-  const { date } = req.query;
-  if (!date) {
-    return res
-      .status(400)
-      .json({ error: "Invalid query parameters: date is required." });
-  }
-  try {
-    const fact = await MarketFact.findOne({
-      where: { date },
-    });
-    if (!fact) {
-      return res
-        .status(404)
-        .json({ error: `No market fact found for ${date}.` });
-    }
-    res.json(fact);
-  } catch (err) {
-    console.error("[ERROR] /api/market/fact", err);
-    res.status(500).json({ error: "Internal server error." });
-  }
-});
-
-// GET /api/market/dates
-marketRouter.get("/dates", async (req, res) => {
-  try {
-    const dates = await MarketFact.findAll({
-      attributes: ["date"],
-      group: ["date"],
-      order: [["date", "DESC"]],
-    });
-
-    const dateList = dates.map((d) => d.date);
-
-    res.json({ total: dateList.length, dates: dateList });
-  } catch (err) {
-    console.error("[ERROR] /api/market/dates", err);
-    res.status(500).json({ error: "Failed to fetch market dates." });
-  }
-});
+// TODO: update endpoint to get data from live api and then fallback if error.
 
 // GET /api/market/stocks
 marketRouter.get("/stocks", async (req, res) => {

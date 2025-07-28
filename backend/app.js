@@ -101,7 +101,6 @@ app.use("/api/queue", queueRouter);
 app.use("/api/match", matchRouter);
 app.use("/api/market", marketRouter);
 
-// TODO: move to own file
 app.get("/csrf-token", (req, res) => {
   res.json({ csrfToken: req.csrfToken() });
 });

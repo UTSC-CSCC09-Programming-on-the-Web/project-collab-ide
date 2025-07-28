@@ -4,6 +4,7 @@ import { isValidStr } from "../utils/validation.js";
 import axios from "axios";
 import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
+import validator from "validator";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -63,11 +64,15 @@ authRouter.get("/google/callback", async (req, res) => {
     const userInfo = ticket.getPayload(); // now it's secure
 
     let user = await User.findOne({ where: { googleId: userInfo.sub } });
+
+    // sanitize username
+    const cleanUsername = validator.escape(userInfo.name);
+
     if (!user) {
       user = await User.create({
         googleId: userInfo.sub,
         email: userInfo.email,
-        username: userInfo.name,
+        username: cleanUsername,
       });
     }
 
