@@ -90,6 +90,7 @@
 
     <!-- Center Overlay (Stock Display + Timer) -->
     <div
+      v-if="!isMatchEnded"
       class="absolute top-0 left-1/2 transform -translate-x-1/2 w-full flex flex-col items-center pt-8 pointer-events-auto"
     >
       <!-- Timer -->
@@ -101,10 +102,7 @@
       </div>
 
       <!-- Match Status -->
-      <div
-        v-if="!isMatchActive && !isMatchEnded"
-        class="text-yellow-500 text-xl mb-4"
-      >
+      <div v-if="!isMatchActive" class="text-yellow-500 text-xl mb-4">
         Waiting for players... ({{ playersInMatch }}/2)
       </div>
 
@@ -124,24 +122,22 @@
       <div
         class="absolute top-0 left-1/2 transform -translate-x-1/2 w-full flex flex-col items-center pt-8 pointer-events-auto"
       >
-        <!-- Timer -->
-        <div
-          class="text-6xl font-bebas mb-4"
-          :class="timeRemaining <= 30 ? 'text-red-500' : 'text-white'"
-        >
-          {{ formatTime(timeRemaining) }}
+        <!-- TIMES UP -->
+        <div class="text-6xl font-bebas mb-4 text-red-500 animate-pulse">
+          GAME OVER
         </div>
         <!-- Winner Message -->
         <div
-          class="bg-white text-black font-bold px-8 py-8 rounded-lg text-center text-lg shadow-lg"
+          class="bg-white text-black font-bold px-8 py-8 rounded-lg text-center text-lg shadow-lg flex justify-center flex-wrap"
         >
-          {{
-            matchResultText === "WINNER"
-              ? `CONGRATS ${userStore.user?.username.toUpperCase()}!`
-              : matchResultText === "TIE"
-              ? "IT'S A TIE!"
-              : `CONGRATS ${opponentDisplayName.toUpperCase()}!`
-          }}
+          <span
+            v-for="(char, index) in winnerMessage.split('')"
+            :key="index"
+            class="inline-block animate-wave"
+            :style="{ animationDelay: `${index * 0.1}s` }"
+          >
+            {{ char === " " ? "\u00A0" : char }}
+          </span>
         </div>
       </div>
 
@@ -159,16 +155,19 @@
       <div
         class="w-1/2 bg-[#252525] text-white flex flex-col items-center justify-start space-y-4 pt-52"
       >
-        <!-- WINNER / LOSER / TIE label -->
-        <div class="text-2xl font-bold" :class="matchResultClass">
+        <!-- WINNER / LOSER label -->
+        <div class="text-2xl font-bold animate-pulse" :style="matchResultStyle">
           {{ matchResultText }}
         </div>
         <div class="text-4xl font-light">YOU</div>
         <div class="text-center pt-8">
           <div class="flex items-baseline space-x-1">
-            <span class="text-6xl font-bold" :class="matchResultClass">{{
-              playerTotalValue.toFixed(2)
-            }}</span>
+            <span
+              class="text-6xl font-bold animate-pulse"
+              :style="matchResultStyle"
+            >
+              {{ playerTotalValue.toFixed(2) }}</span
+            >
             <span class="text-white text-3xl font-light">USD</span>
           </div>
         </div>
@@ -264,29 +263,25 @@ export default defineComponent({
       }
     },
 
-    matchResultClass(): string {
-      if (!this.isMatchEnded) return "";
+    matchResultStyle(): Record<string, string> {
+      if (!this.isMatchEnded) return {};
 
       if (this.playerTotalValue > this.opponentTotalValue) {
-        return "text-green-400 animate-pulse";
+        return { color: "#4AD488" };
       } else if (this.playerTotalValue < this.opponentTotalValue) {
-        return "text-red-400";
+        return { color: "#EF1515" };
       } else {
-        return "text-yellow-400";
+        return { color: "#FFD700" };
       }
     },
 
     winnerMessage(): string {
-      if (!this.isMatchEnded) return "";
-
-      if (this.playerTotalValue > this.opponentTotalValue) {
-        return `CONGRATS ${
-          this.userStore.user?.username?.toUpperCase() || "YOU"
-        }!`;
-      } else if (this.playerTotalValue < this.opponentTotalValue) {
-        return `CONGRATS ${this.opponentDisplayName.toUpperCase()}!`;
-      } else {
+      if (this.matchResultText === "WINNER") {
+        return `CONGRATS ${this.userStore.user?.username.toUpperCase()}!`;
+      } else if (this.matchResultText === "TIE") {
         return "IT'S A TIE!";
+      } else {
+        return `CONGRATS ${this.opponentDisplayName.toUpperCase()}!`;
       }
     },
   },
