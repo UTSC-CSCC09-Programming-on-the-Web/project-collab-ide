@@ -55,6 +55,7 @@
 import axios from "axios";
 import { defineComponent } from "vue";
 import { useUserStore } from "@/stores/user";
+import { useCsrfStore } from "@/stores/csrf";
 import ErrorToast from "@/components/ErrorToast.vue";
 import LogoutButton from "@/components/LogoutButton.vue";
 import UnsubscribeButton from "@/components/UnsubscribeButton.vue";
@@ -70,6 +71,7 @@ export default defineComponent({
   data() {
     return {
       userStore: useUserStore(),
+      csrfStore: useCsrfStore(),
       inQueue: false as boolean,
       matchId: null as number | null,
       userId: 123 as number,
@@ -86,7 +88,12 @@ export default defineComponent({
         await axios.post(
           `${process.env.VUE_APP_BACKEND_URL}/api/queue/join`,
           {},
-          { withCredentials: true },
+          {
+            withCredentials: true,
+            headers: {
+              "CSRF-Token": this.csrfStore.token,
+            },
+          },
         );
         this.inQueue = true;
         this.startPolling();
@@ -104,7 +111,12 @@ export default defineComponent({
         await axios.post(
           `${process.env.VUE_APP_BACKEND_URL}/api/queue/leave`,
           {},
-          { withCredentials: true },
+          {
+            withCredentials: true,
+            headers: {
+              "CSRF-Token": this.csrfStore.token,
+            },
+          },
         );
         this.inQueue = false;
         if (this.pollInterval) clearInterval(this.pollInterval);
