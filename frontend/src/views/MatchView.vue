@@ -199,7 +199,7 @@
         <div class="text-center">
           <div class="text-xl font-light">YOU</div>
           <div class="flex items-baseline space-x-1">
-            <span class="text-6xl font-bold">{{
+            <span class="text-6xl font-bold" :class="matchResultClass">{{
               playerTotalValue.toFixed(2)
             }}</span>
             <span class="text-white text-lg font-light">USD</span>
