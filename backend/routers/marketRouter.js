@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { MarketFact } from "../models/marketFact.js";
 import { MarketCandle } from "../models/marketCandle.js";
 import { Sequelize } from "sequelize";
 

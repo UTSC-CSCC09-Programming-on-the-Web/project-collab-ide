@@ -2,13 +2,14 @@ import express from "express";
 import dotenv from "dotenv";
 import Stripe from "stripe";
 import { User } from "../models/user.js";
+import { isAuthenticated } from "../middleware/auth.js";
 
 dotenv.config();
 
 const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "secret");
 
-router.post("/create-checkout-session", async (req, res) => {
+router.post("/create-checkout-session", isAuthenticated, async (req, res) => {
   const userId = req.user.id;
   const user = await User.findByPk(userId);
 

@@ -9,7 +9,6 @@ PG_USER = os.environ.get("POSTGRES_USER", "postgres")
 PG_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "password")
 
 CSV_DIR = "seed_data/csv"
-FACTS_CSV = "seed_data/market_facts.csv"
 
 def get_conn():
     return psycopg2.connect(
@@ -23,7 +22,6 @@ def get_conn():
 def drop_and_create_tables(cur, conn):
     # Drop tables (seems to persist after docke rdown)
     cur.execute("""DROP TABLE IF EXISTS "MarketCandles";""")
-    cur.execute("""DROP TABLE IF EXISTS "MarketFacts";""")
 
     # Create tables
     cur.execute("""
@@ -38,14 +36,6 @@ def drop_and_create_tables(cur, conn):
             close DOUBLE PRECISION NOT NULL,
             volume DOUBLE PRECISION NOT NULL,
             market TEXT NOT NULL
-        );
-    """)
-    cur.execute("""
-        CREATE TABLE "MarketFacts" (
-            id SERIAL PRIMARY KEY,
-            date DATE NOT NULL,
-            title TEXT NOT NULL,
-            blurb TEXT NOT NULL
         );
     """)
     conn.commit()
@@ -65,24 +55,12 @@ def seed_market_candles(cur, conn):
         conn.commit()
         print(f"[DONE] Loaded {file}")
 
-def seed_market_facts(cur, conn):
-    print(f"[LOADING] {FACTS_CSV}")
-    with open(FACTS_CSV, 'r') as f:
-        next(f)
-        cur.copy_expert(
-            sql="""COPY "MarketFacts" (date, title, blurb) FROM STDIN WITH CSV""",
-            file=f
-        )
-    conn.commit()
-    print(f"[DONE] Loaded market_facts.csv")
-
 def main():
     try:
         conn = get_conn()
         cur = conn.cursor()
         drop_and_create_tables(cur, conn)
         seed_market_candles(cur, conn)
-        seed_market_facts(cur, conn)
         print("[COMPLETE] Seeding finished.")
     except Exception as e:
         print(f"[ERROR] {e}")
