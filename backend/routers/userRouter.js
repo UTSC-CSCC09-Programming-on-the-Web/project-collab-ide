@@ -39,10 +39,16 @@ userRouter.post("/unsubscribe", isAuthenticated, async (req, res) => {
         .json({ error: `User with id ${userId} does not exist.` });
     }
 
-    // Cancel stripe subscription
-    if (user.stripeSubId) {
-      await stripe.subscriptions.cancel(user.stripeSubId);
+    if (!user.stripeSubId) {
+      return res
+        .status(404)
+        .json({
+          error: `User with id ${userId} does not have a subscription id.`,
+        });
     }
+
+    // Cancel stripe subscription
+    await stripe.subscriptions.cancel(user.stripeSubId);
 
     res
       .status(200)
