@@ -30,11 +30,24 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { useUserStore } from "@/stores/user";
+import { useCsrfStore } from "@/stores/csrf";
 
 const userStore = useUserStore();
+const csrfStore = useCsrfStore();
 
 onMounted(async () => {
   try {
+    fetch(`${process.env.VUE_APP_BACKEND_URL}/csrf-token`, {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then(({ csrfToken }) => {
+        csrfStore.setToken(csrfToken);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch CSRF token:", err);
+      });
+
     const res = await fetch(`${process.env.VUE_APP_BACKEND_URL}/api/users/me`, {
       credentials: "include",
     });

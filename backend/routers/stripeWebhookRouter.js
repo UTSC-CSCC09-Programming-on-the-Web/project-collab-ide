@@ -54,7 +54,9 @@ stripWebhookRouter.post(
       const email = customer.email;
 
       if (!email) {
-        console.error("Error: Subscription was cancelled but no email was found.");
+        console.error(
+          "Error: Subscription was cancelled but no email was found.",
+        );
         return res.status(400).send(MISSING_CUSTOMER_EMAIL);
       }
 
