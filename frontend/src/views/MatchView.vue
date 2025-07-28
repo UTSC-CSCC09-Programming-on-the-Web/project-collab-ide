@@ -2,16 +2,10 @@
   <div class="flex h-screen w-screen">
     <!-- Left Side (YOU) -->
     <div
-      class="w-1/2 bg-[#125C87] text-white flex flex-col items-center justify-center space-y-4"
+      v-if="isMatchActive && !isMatchEnded"
+      class="w-1/2 bg-[#125C87] text-white flex flex-col items-center justify-start space-y-4 pt-56"
     >
       <div class="text-center">
-        <h1
-          v-if="isMatchEnded"
-          class="text-5xl font-bold mb-2"
-          :class="matchResultClass"
-        >
-          {{ matchResultText }}
-        </h1>
         <h2 class="text-4xl font-bold">YOU</h2>
       </div>
 
@@ -36,7 +30,7 @@
           >
         </div>
       </div>
-      <div v-if="isMatchActive && !isMatchEnded" class="space-y-2">
+      <div class="space-y-2">
         <div class="flex space-x-2">
           <input
             v-model="buyInput"
@@ -45,8 +39,8 @@
             placeholder="$"
           />
           <button
-            @click="buyStock"
             class="bg-[#782ACC] w-28 px-4 py-1 rounded text-white hover:bg-[#6520a8] transition-colors"
+            @click="buyStock"
           >
             BUY
           </button>
@@ -59,8 +53,8 @@
             placeholder="$"
           />
           <button
-            @click="sellStock"
             class="bg-[#782ACC] w-28 px-4 py-1 rounded text-white hover:bg-[#6520a8] transition-colors"
+            @click="sellStock"
           >
             SELL
           </button>
@@ -70,9 +64,12 @@
 
     <!-- Right Side (Opponent) -->
     <div
-      class="w-1/2 bg-[#252525] text-white flex flex-col items-center justify-center space-y-4"
+      v-if="isMatchActive && !isMatchEnded"
+      class="w-1/2 bg-[#252525] text-white flex flex-col items-center justify-start space-y-4 pt-56"
     >
-      <h2 class="text-4xl font-bold">{{ opponentDisplayName }}</h2>
+      <h2 class="text-4xl font-bold">
+        {{ opponentDisplayName.toLocaleUpperCase() }}
+      </h2>
       <div class="space-y-1 w-[300px]">
         <div class="flex justify-between">
           <span>CASH</span>
@@ -89,7 +86,7 @@
           <span class="font-bold">{{ opponentTotalValue.toFixed(2) }} USD</span>
         </div>
       </div>
-      <div v-if="isMatchActive && !isMatchEnded" class="space-y-2">
+      <div class="space-y-2">
         <div class="flex space-x-2">
           <input
             :value="opponentBuyInput"
@@ -144,19 +141,85 @@
       </div>
 
       <StockDisplay
+        v-if="isMatchActive && !isMatchEnded"
         :exchange="exchange"
         :ticker="ticker"
         :price="currentPrice"
         :change="priceChange"
         :percent-change="percentChange"
       />
-      <div v-if="isMatchEnded" class="mt-8">
-        <button
-          @click="goHome"
-          class="bg-[#782ACC] hover:bg-[#6520a8] text-white font-bold px-16 py-4 rounded-lg text-xl transition-colors shadow-lg"
+    </div>
+
+    <!-- End-of-Match Results Layout -->
+    <div v-if="isMatchEnded" class="flex h-screen w-screen">
+      <!-- Center Overlay (Timer + Message) -->
+      <div
+        class="absolute top-0 left-1/2 transform -translate-x-1/2 w-full flex flex-col items-center pt-8 pointer-events-auto"
+      >
+        <!-- Timer -->
+        <div
+          class="text-6xl font-bebas mb-4"
+          :class="timeRemaining <= 30 ? 'text-red-500' : 'text-white'"
         >
-          Leave Match
+          {{ formatTime(timeRemaining) }}
+        </div>
+        <!-- Winner Message -->
+        <div
+          class="bg-white text-black font-bold px-8 py-20 rounded-lg text-center text-4xl shadow-lg"
+        >
+          {{
+            matchResultText === "WINNER"
+              ? `CONGRATS ${userStore.user?.username.toUpperCase()}!`
+              : matchResultText === "TIE"
+              ? "IT'S A TIE!"
+              : `CONGRATS ${opponentDisplayName.toUpperCase()}!`
+          }}
+        </div>
+      </div>
+
+      <!-- LEAVE MATCH BUTTON -->
+      <div class="absolute bottom-20 left-1/2 transform -translate-x-1/2">
+        <button
+          class="bg-[#782ACC] hover:bg-[#6520a8] text-white font-semibold px-32 py-2 rounded-lg text-xl transition-colors shadow-lg"
+          @click="goHome"
+        >
+          LEAVE MATCH
         </button>
+      </div>
+
+      <!-- YOU VIEW -->
+      <div
+        class="w-1/2 bg-[#252525] text-white flex flex-col items-center justify-start space-y-4 pt-52"
+      >
+        <!-- WINNER / LOSER / TIE label -->
+        <div class="text-4xl font-bold" :class="matchResultClass">
+          {{ matchResultText }}
+        </div>
+        <!-- Player -->
+        <div class="text-center">
+          <div class="text-xl font-light">YOU</div>
+          <div class="flex items-baseline space-x-1">
+            <span class="text-6xl font-bold">{{
+              playerTotalValue.toFixed(2)
+            }}</span>
+            <span class="text-white text-lg font-light">USD</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Opponent VIEW -->
+      <div
+        class="w-1/2 bg-[#252525] text-white flex flex-col items-center justify-start space-y-4 pt-56"
+      >
+        <div class="text-xl font-bold">
+          {{ opponentDisplayName.toUpperCase() }}
+        </div>
+        <div class="flex items-baseline space-x-1">
+          <span class="text-6xl font-bold">{{
+            opponentTotalValue.toFixed(2)
+          }}</span>
+          <span class="text-white text-lg font-light">USD</span>
+        </div>
       </div>
     </div>
   </div>
@@ -243,6 +306,20 @@ export default defineComponent({
         return "text-red-400";
       } else {
         return "text-yellow-400";
+      }
+    },
+
+    winnerMessage(): string {
+      if (!this.isMatchEnded) return "";
+
+      if (this.playerTotalValue > this.opponentTotalValue) {
+        return `CONGRATS ${
+          this.userStore.user?.username?.toUpperCase() || "YOU"
+        }!`;
+      } else if (this.playerTotalValue < this.opponentTotalValue) {
+        return `CONGRATS ${this.opponentDisplayName.toUpperCase()}!`;
+      } else {
+        return "IT'S A TIE!";
       }
     },
   },

@@ -20,7 +20,7 @@
       v-if="matchId"
       class="enter-showdown-txt font-semibold mt-4 text-black"
     >
-      MATCH FOUND! Match ID: {{ matchId }}
+      MATCH FOUND!
     </div>
     <div
       v-else-if="inQueue"
