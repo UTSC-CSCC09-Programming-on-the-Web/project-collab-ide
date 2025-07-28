@@ -3,6 +3,9 @@ import { User } from "../models/user.js";
 import { isValidStr } from "../utils/validation.js";
 import axios from "axios";
 import jwt from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const authRouter = Router();
 const PROD_ENV = "production";
@@ -16,7 +19,6 @@ authRouter.get("/google", (req, res) => {
     scope: "openid email profile",
     access_type: "offline",
     prompt: "consent",
-    // TODO:
   });
 
   const googleOAuthURL = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
@@ -53,7 +55,12 @@ authRouter.get("/google/callback", async (req, res) => {
         .send("An error occured: Failed to retrieve id_token from Google.");
     }
 
-    const userInfo = jwt.decode(id_token);
+    // verify token signature
+    const ticket = await client.verifyIdToken({
+      idToken: id_token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const userInfo = ticket.getPayload(); // now it's secure
 
     let user = await User.findOne({ where: { googleId: userInfo.sub } });
     if (!user) {
@@ -81,11 +88,11 @@ authRouter.get("/google/callback", async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    if (user.isSubscribed) {
-      res.redirect(`${process.env.FRONTEND_URL}/home`);
-    } else {
-      res.redirect(`${process.env.FRONTEND_URL}/subscription`);
-    }
+    res.redirect(
+      user.isSubscribed
+        ? `${process.env.FRONTEND_URL}/home`
+        : `${process.env.FRONTEND_URL}/subscription`,
+    );
   } catch (err) {
     console.error(err.response?.data || err);
     res
