@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <div class="absolute top-4 right-4 flex items-center space-x-4">
+    <div class="absolute top-4 right-4 flex flex-col items-end space-y-2">
       <LogoutButton v-if="userStore.user" />
       <UnsubscribeButton v-if="userStore.user" />
     </div>
