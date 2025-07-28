@@ -86,38 +86,6 @@
           <span class="font-bold">{{ opponentTotalValue.toFixed(2) }} USD</span>
         </div>
       </div>
-      <div class="space-y-2">
-        <div class="flex space-x-2">
-          <input
-            :value="opponentBuyInput"
-            type="text"
-            disabled
-            class="px-2 py-1 rounded text-black bg-white cursor-not-allowed"
-            placeholder="$"
-          />
-          <button
-            disabled
-            class="bg-[#782ACC] w-28 px-4 py-1 rounded text-white cursor-not-allowed opacity-75"
-          >
-            BUY
-          </button>
-        </div>
-        <div class="flex space-x-2">
-          <input
-            :value="opponentSellInput"
-            type="text"
-            disabled
-            class="px-2 py-1 rounded text-black bg-white cursor-not-allowed"
-            placeholder="$"
-          />
-          <button
-            disabled
-            class="bg-[#782ACC] w-28 px-4 py-1 rounded text-white cursor-not-allowed opacity-75"
-          >
-            SELL
-          </button>
-        </div>
-      </div>
     </div>
 
     <!-- Center Overlay (Stock Display + Timer) -->
@@ -165,7 +133,7 @@
         </div>
         <!-- Winner Message -->
         <div
-          class="bg-white text-black font-bold px-8 py-20 rounded-lg text-center text-4xl shadow-lg"
+          class="bg-white text-black font-bold px-8 py-8 rounded-lg text-center text-lg shadow-lg"
         >
           {{
             matchResultText === "WINNER"
@@ -180,7 +148,7 @@
       <!-- LEAVE MATCH BUTTON -->
       <div class="absolute bottom-20 left-1/2 transform -translate-x-1/2">
         <button
-          class="bg-[#782ACC] hover:bg-[#6520a8] text-white font-semibold px-32 py-2 rounded-lg text-xl transition-colors shadow-lg"
+          class="bg-[#782ACC] hover:bg-[#6520a8] text-white font-semibold px-24 py-2 rounded-lg text-lg transition-colors shadow-lg"
           @click="goHome"
         >
           LEAVE MATCH
@@ -192,33 +160,32 @@
         class="w-1/2 bg-[#252525] text-white flex flex-col items-center justify-start space-y-4 pt-52"
       >
         <!-- WINNER / LOSER / TIE label -->
-        <div class="text-4xl font-bold" :class="matchResultClass">
+        <div class="text-2xl font-bold" :class="matchResultClass">
           {{ matchResultText }}
         </div>
-        <!-- Player -->
-        <div class="text-center">
-          <div class="text-xl font-light">YOU</div>
+        <div class="text-4xl font-light">YOU</div>
+        <div class="text-center pt-8">
           <div class="flex items-baseline space-x-1">
             <span class="text-6xl font-bold" :class="matchResultClass">{{
               playerTotalValue.toFixed(2)
             }}</span>
-            <span class="text-white text-lg font-light">USD</span>
+            <span class="text-white text-3xl font-light">USD</span>
           </div>
         </div>
       </div>
 
       <!-- Opponent VIEW -->
       <div
-        class="w-1/2 bg-[#252525] text-white flex flex-col items-center justify-start space-y-4 pt-56"
+        class="w-1/2 bg-[#252525] text-white flex flex-col items-center justify-start space-y-4 pt-64"
       >
-        <div class="text-xl font-bold">
+        <div class="text-4xl font-bold">
           {{ opponentDisplayName.toUpperCase() }}
         </div>
-        <div class="flex items-baseline space-x-1">
+        <div class="flex items-baseline space-x-1 pt-8">
           <span class="text-6xl font-bold">{{
             opponentTotalValue.toFixed(2)
           }}</span>
-          <span class="text-white text-lg font-light">USD</span>
+          <span class="text-white text-2xl font-light">USD</span>
         </div>
       </div>
     </div>
