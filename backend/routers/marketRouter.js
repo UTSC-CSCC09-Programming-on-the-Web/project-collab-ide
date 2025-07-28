@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { MarketCandle } from "../models/marketCandle.js";
 import { Sequelize } from "sequelize";
+import axios from "axios";
 
 export const marketRouter = Router();
 
@@ -40,11 +41,52 @@ marketRouter.get("/candles", async (req, res) => {
   limit = parseInt(limit) || 60;
 
   try {
-    const candles = await getCandles({ market, ticker, date, page, limit });
-    res.json({ total: candles.length, candles });
+    const fallback = async () => {
+      const candles = await getCandles({ market, ticker, date, page, limit });
+      return res.json({ total: candles.length, candles });
+    };
+
+    const [year, month] = date.split("-");
+    const alphaUrl = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${ticker}&interval=5min&month=${year}-${month}&outputsize=full&apikey=${process.env.ALPHA_VANTAGE_API_KEY}`;
+
+    const alphaRes = await axios.get(alphaUrl);
+    const rawData = alphaRes.data["Time Series (5min)"];
+
+    if (!rawData) {
+      console.warn("AlphaVantage returned invalid format, using fallback.");
+      return fallback();
+    }
+
+    const filtered = Object.entries(rawData)
+      .filter(([timestamp]) => timestamp.startsWith(date))
+      .sort((a, b) => new Date(a[0]) - new Date(b[0]))
+      .slice(0, limit)
+      .map(([timestamp, ohlcv]) => ({
+        market: market.toUpperCase(),
+        ticker: ticker.toUpperCase(),
+        date,
+        timestamp,
+        open: parseFloat(ohlcv["1. open"]),
+        high: parseFloat(ohlcv["2. high"]),
+        low: parseFloat(ohlcv["3. low"]),
+        close: parseFloat(ohlcv["4. close"]),
+        volume: parseFloat(ohlcv["5. volume"]),
+      }));
+
+    if (filtered.length < limit) {
+      console.warn("AlphaVantage data insufficient, falling back to DB.");
+      return fallback();
+    }
+    return res.json({ total: filtered.length, candles: filtered });
   } catch (err) {
-    console.error("[ERROR] /api/market/candles", err);
-    res.status(500).json({ error: "Internal server error." });
+    console.error("[WARN] AlphaVantage failed, using fallback:", err.message);
+    try {
+      const candles = await getCandles({ market, ticker, date, page, limit });
+      return res.json({ total: candles.length, candles });
+    } catch (fallbackErr) {
+      console.error("[ERROR] /api/market/candles fallback", fallbackErr);
+      return res.status(500).json({ error: "Internal server error." });
+    }
   }
 });
 
