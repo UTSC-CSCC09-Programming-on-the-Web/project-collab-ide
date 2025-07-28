@@ -40,11 +40,9 @@ userRouter.post("/unsubscribe", isAuthenticated, async (req, res) => {
     }
 
     if (!user.stripeSubId) {
-      return res
-        .status(404)
-        .json({
-          error: `User with id ${userId} does not have a subscription id.`,
-        });
+      return res.status(404).json({
+        error: `User with id ${userId} does not have a subscription id.`,
+      });
     }
 
     // Cancel stripe subscription
