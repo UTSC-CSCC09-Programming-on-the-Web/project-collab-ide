@@ -1,7 +1,9 @@
 import { Router } from "express";
 import { User } from "../models/user.js";
 import { isAuthenticated } from "../middleware/auth.js";
+import Stripe from "stripe";
 
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 export const userRouter = Router();
 
 // GET /users/me
@@ -37,10 +39,14 @@ userRouter.post("/unsubscribe", isAuthenticated, async (req, res) => {
         .json({ error: `User with id ${userId} does not exist.` });
     }
 
-    user.isSubscribed = false;
-    await user.save();
+    // Cancel stripe subscription
+    if (user.stripeSubId) {
+      await stripe.subscriptions.cancel(user.stripeSubId);
+    }
 
-    res.status(200).json({ message: "Unsubscribed and updated user status." });
+    res
+      .status(200)
+      .json({ message: "Unsubscribed and cancelled Stripe subscription." });
   } catch (err) {
     console.error("Error in POST users/unsubscribe:", err);
     res.status(500).json({ error: "Internal server error." });

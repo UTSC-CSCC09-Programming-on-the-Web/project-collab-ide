@@ -14,10 +14,7 @@ router.post("/create-checkout-session", async (req, res) => {
   try {
     // If user exists, update subscription status
     const user = await User.findOne({ where: { email } });
-    if (user) {
-      user.isSubscribed = true;
-      await user.save();
-    } else {
+    if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 

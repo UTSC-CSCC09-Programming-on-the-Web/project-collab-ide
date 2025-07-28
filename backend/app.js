@@ -19,6 +19,7 @@ import jwt from "jsonwebtoken";
 
 import http from "http";
 import { Server } from "socket.io";
+import { stripWebhookRouter } from "./routers/stripeWebhookRouter.js";
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ if (!fs.existsSync("uploads")) {
 }
 
 app.use(cors({ origin: `${FRONTEND_URL}`, credentials: true }));
+app.use("/webhook", stripWebhookRouter);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cookieParser());
