@@ -43,6 +43,6 @@ withDefaults(
   }>(),
   {
     exchange: "NASDAQ", // default
-  }
+  },
 );
 </script>
