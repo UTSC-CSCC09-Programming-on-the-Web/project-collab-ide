@@ -1,39 +1,78 @@
 <template>
-  <div class="home">
-    <div class="absolute top-4 right-4 flex flex-col items-end space-y-4">
-      <LogoutButton v-if="userStore.user" />
-      <UnsubscribeButton v-if="userStore.user" />
+  <div class="home flex h-screen w-screen px-8 py-6 space-x-8">
+    <!-- LEFT: Match History -->
+    <div class="w-1/3">
+      <h2
+        class="text-black font-bold mb-4 text-xl sm:text-2xl md:text-3xl lg:text-4xl pt-12"
+      >
+        MATCH HISTORY
+      </h2>
+      <div
+        v-if="matchHistory.length === 0"
+        class="sm:text-sm md:text-md lg:text-lg text-gray-600"
+      >
+        You have no match history yet.
+      </div>
+      <ul v-else class="space-y-3">
+        <li
+          v-for="match in matchHistory"
+          :key="match.id"
+          class="border p-4 rounded-lg shadow-md bg-gray-100"
+        >
+          <p
+            class="text-lg font-bold"
+            :class="{
+              'text-green-600': match.winnerId === userStore.user?.id,
+              'text-red-600': match.loserId === userStore.user?.id,
+            }"
+          >
+            {{ match.winnerId === userStore.user?.id ? "WIN" : "LOSS" }}
+          </p>
+          <p class="text-sm">STOCK: {{ match.stockTicker || "AAPL" }}</p>
+          <p class="text-sm">
+            TIME: {{ new Date(match.startTime).toLocaleString() }}
+          </p>
+          <p class="text-sm text-green-600 font-semibold">
+            YOUR PAYOUT:
+            {{
+              match.player1Id === userStore.user?.id
+                ? match.player1Payout
+                : match.player2Payout
+            }}
+          </p>
+        </li>
+      </ul>
     </div>
 
-    <h1
-      class="user-txt py-4 text-black mb-4 text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
-    >
-      HEY,
-      <span class="text-[#197442]">{{
-        userStore.$state.user?.username.toLocaleUpperCase()
-      }}</span>
-    </h1>
-    <ErrorToast
-      v-if="isError"
-      :message="errorMessage"
-      @close="isError = false"
-    />
+    <!-- CENTER: Main Content -->
     <div
-      v-if="matchId"
-      class="enter-showdown-txt font-semibold mt-4 text-black"
+      class="w-1/3 flex-1 flex flex-col items-center justify-start space-y-4"
     >
-      MATCH FOUND!
-    </div>
-    <div
-      v-else-if="inQueue"
-      class="enter-showdown-txt font-semibold mt-4 text-black"
-    >
-      FINDING MATCH ...
-    </div>
-    <div v-else class="enter-showdown-txt text-black font-semibold mt-4">
-      ENTER A 1V1 SHOWDOWN
-    </div>
-    <div class="flex flex-col items-center">
+      <h1
+        class="user-txt text-black mb-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl"
+      >
+        HEY,
+        <span class="text-[#197442]">{{
+          userStore.$state.user?.username.toUpperCase()
+        }}</span>
+      </h1>
+
+      <ErrorToast
+        v-if="isError"
+        :message="errorMessage"
+        @close="isError = false"
+      />
+
+      <div v-if="matchId" class="text-xl font-semibold text-black">
+        MATCH FOUND!
+      </div>
+      <div v-else-if="inQueue" class="text-xl font-semibold text-black">
+        FINDING MATCH ...
+      </div>
+      <div v-else class="text-xl font-semibold text-black">
+        ENTER A 1V1 SHOWDOWN
+      </div>
+
       <button
         class="join-queue-btn font-semibold text-white"
         :disabled="inQueue"
@@ -49,6 +88,11 @@
       >
         CANCEL
       </button>
+    </div>
+    <!-- Top Right Buttons -->
+    <div class="w-1/3 flex flex-col items-end space-y-4">
+      <LogoutButton v-if="userStore.user" />
+      <UnsubscribeButton v-if="userStore.user" />
     </div>
   </div>
 </template>
@@ -79,7 +123,11 @@ export default defineComponent({
       isError: false as boolean,
       errorMessage: "" as string,
       router: useRouter(),
+      matchHistory: [] as any[],
     };
+  },
+  async mounted() {
+    await this.fetchMatchHistory();
   },
   methods: {
     async joinQueue() {
@@ -138,6 +186,17 @@ export default defineComponent({
     },
     startPolling() {
       this.pollInterval = setInterval(this.checkMatchStatus, 3000);
+    },
+    async fetchMatchHistory() {
+      try {
+        const res = await axios.get(
+          `${process.env.VUE_APP_BACKEND_URL}/api/match/history`,
+          { withCredentials: true }
+        );
+        this.matchHistory = res.data.matches;
+      } catch (err: any) {
+        console.error("Failed to load match history", err.message);
+      }
     },
   },
 });
