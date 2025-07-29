@@ -9,7 +9,7 @@
     />
     <p class="description max-w-xl mb-10 text-lg md:text-xl">
       Compete against other players in a 1v1 showdown to see how much money you
-      can make with a volatile stock in 5 minutes.
+      can make with a volatile stock in 3 minutes.
     </p>
     <button
       class="start-button bg-red-700 hover:bg-red-800 text-white py-4 px-32 shadow-md font-semibold text-lg"

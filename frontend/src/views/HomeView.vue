@@ -1,11 +1,13 @@
 <template>
   <div class="home">
-    <div class="absolute top-4 right-4 flex items-center space-x-4">
+    <div class="absolute top-4 right-4 flex flex-col items-end space-y-4">
       <LogoutButton v-if="userStore.user" />
       <UnsubscribeButton v-if="userStore.user" />
     </div>
 
-    <h1 class="user-txt text-black mb-4">
+    <h1
+      class="user-txt py-4 text-black mb-4 text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
+    >
       HEY,
       <span class="text-[#197442]">{{
         userStore.$state.user?.username.toLocaleUpperCase()
@@ -20,7 +22,7 @@
       v-if="matchId"
       class="enter-showdown-txt font-semibold mt-4 text-black"
     >
-      MATCH FOUND! Match ID: {{ matchId }}
+      MATCH FOUND!
     </div>
     <div
       v-else-if="inQueue"
@@ -155,7 +157,6 @@ export default defineComponent({
 <style scoped>
 .user-txt {
   font-family: "Bebas Neue", sans-serif;
-  font-size: 4rem;
 }
 .enter-showdown-txt {
   font-family: "Roboto Condensed", sans-serif;
