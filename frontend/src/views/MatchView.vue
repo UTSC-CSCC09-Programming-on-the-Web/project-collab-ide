@@ -45,8 +45,8 @@
             placeholder="$"
           />
           <button
-            @click="buyStock"
             class="bg-[#782ACC] w-28 px-4 py-1 rounded text-white hover:bg-[#6520a8] transition-colors"
+            @click="buyStock"
           >
             BUY
           </button>
@@ -59,8 +59,8 @@
             placeholder="$"
           />
           <button
-            @click="sellStock"
             class="bg-[#782ACC] w-28 px-4 py-1 rounded text-white hover:bg-[#6520a8] transition-colors"
+            @click="sellStock"
           >
             SELL
           </button>
@@ -152,8 +152,8 @@
       />
       <div v-if="isMatchEnded" class="mt-8">
         <button
-          @click="goHome"
           class="bg-[#782ACC] hover:bg-[#6520a8] text-white font-bold px-16 py-4 rounded-lg text-xl transition-colors shadow-lg"
+          @click="goHome"
         >
           Leave Match
         </button>
@@ -255,7 +255,7 @@ export default defineComponent({
           this.setupSocket(user.id);
         }
       },
-      { immediate: true },
+      { immediate: true }
     );
   },
   beforeUnmount() {
@@ -282,7 +282,7 @@ export default defineComponent({
             this.opponentUserId = userId;
             this.opponentUsername = username;
           }
-        },
+        }
       );
 
       // Listen for timer updates from backend
@@ -296,7 +296,7 @@ export default defineComponent({
         ({ cash, shares }: { cash: number; shares: number }) => {
           this.playerCash = cash;
           this.playerShares = shares;
-        },
+        }
       );
 
       // Listen for opponent trades
@@ -336,7 +336,7 @@ export default defineComponent({
               this.opponentSellInput = "";
             }, 2000);
           }
-        },
+        }
       );
 
       // Listen for match start
@@ -361,13 +361,13 @@ export default defineComponent({
             this.getMarketData(
               data.marketCombo.market,
               data.marketCombo.ticker,
-              data.marketCombo.marketDate,
+              data.marketCombo.marketDate
             );
           } else {
             this.exchange = data.marketCombo.market;
             this.ticker = data.marketCombo.ticker;
           }
-        },
+        }
       );
 
       // Listen for match end
@@ -389,7 +389,7 @@ export default defineComponent({
           if (userId === myUserId) return;
           this.opponentCash -= amount;
           this.opponentUserId = userId;
-        },
+        }
       );
 
       this.socket.on(
@@ -399,7 +399,7 @@ export default defineComponent({
           const sharesSold = amount / this.currentPrice;
           this.opponentCash += amount;
           this.opponentUserId = userId;
-        },
+        }
       );
 
       this.socket.on(
@@ -408,7 +408,7 @@ export default defineComponent({
           this.currentPrice = data.price;
           this.priceChange = data.change;
           this.percentChange = data.percentChange;
-        },
+        }
       );
     },
 
@@ -455,7 +455,7 @@ export default defineComponent({
               limit: 180,
             },
             withCredentials: true,
-          },
+          }
         );
         this.stockData = res.data.candles;
         this.exchange = market;

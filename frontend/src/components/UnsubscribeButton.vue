@@ -30,7 +30,7 @@ async function handleUnsubscribe() {
         headers: {
           "CSRF-Token": csrfStore.token,
         },
-      },
+      }
     );
 
     if (!unsubscribeRes.ok) {
@@ -45,7 +45,7 @@ async function handleUnsubscribe() {
         headers: {
           "CSRF-Token": csrfStore.token,
         },
-      },
+      }
     );
 
     if (!logoutRes.ok) {
@@ -66,9 +66,7 @@ async function handleUnsubscribe() {
 <style scoped>
 .unsubscribe-btn {
   font-family: "Roboto Condensed", sans-serif;
-  transition:
-    background-color 0.2s ease,
-    transform 0.1s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 .unsubscribe-btn:hover {
   transform: translateY(-2px);
