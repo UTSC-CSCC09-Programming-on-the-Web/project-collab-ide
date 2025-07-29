@@ -13,9 +13,11 @@
 import { ref } from "vue";
 import { computed } from "vue";
 import { useUserStore } from "@/stores/user";
+import { useCsrfStore } from "@/stores/csrf";
 
 const loading = ref(false);
 const userStore = useUserStore();
+const csrfStore = useCsrfStore();
 const email = computed(() => userStore.user?.email || "");
 
 const handleSubscribe = async () => {
@@ -26,11 +28,14 @@ const handleSubscribe = async () => {
 
   try {
     const response = await fetch(
-      "http://localhost:3000/stripe/create-checkout-session",
+      `${process.env.VUE_APP_BACKEND_URL}/stripe/create-checkout-session`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.value }),
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "CSRF-Token": csrfStore.token,
+        },
       }
     );
 
