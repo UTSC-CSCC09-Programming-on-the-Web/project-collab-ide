@@ -28,7 +28,7 @@ const handleSubscribe = async () => {
 
   try {
     const response = await fetch(
-      `http://${process.env.VUE_APP_BACKEND_URL}/stripe/create-checkout-session`,
+      `${process.env.VUE_APP_BACKEND_URL}/stripe/create-checkout-session`,
       {
         method: "POST",
         credentials: "include",
