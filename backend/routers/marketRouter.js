@@ -95,7 +95,7 @@ const getCandles = async ({ market, ticker, date, page = 0, limit = 180 }) => {
 
   const candles = await MarketCandle.findAll({
     where: {
-      market: market.toUpperCase(),
+      market: market,
       ticker: ticker.toUpperCase(),
       date,
     },
