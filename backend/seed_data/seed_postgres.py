@@ -2,7 +2,7 @@ import os
 import psycopg2
 import csv
 
-PG_HOST = os.environ.get("POSTGRES_HOST", "localhost")
+PG_HOST = os.environ.get("POSTGRES_HOST", "postgres")
 PG_PORT = os.environ.get("POSTGRES_PORT", "5432")
 PG_DB = os.environ.get("POSTGRES_DB", "stockshowdown")
 PG_USER = os.environ.get("POSTGRES_USER", "postgres")
@@ -77,6 +77,8 @@ def seed_market_facts(cur, conn):
     print(f"[DONE] Loaded market_facts.csv")
 
 def main():
+    conn = None
+    cur = None
     try:
         conn = get_conn()
         cur = conn.cursor()
@@ -87,8 +89,10 @@ def main():
     except Exception as e:
         print(f"[ERROR] {e}")
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 if __name__ == "__main__":
     main()
