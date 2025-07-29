@@ -60,6 +60,12 @@
           </button>
         </div>
       </div>
+      <div
+        v-if="currentError"
+        class="bg-red-500 text-white text-bold px-4 py-2 rounded shadow-lg transition-opacity duration-700 ease-in-out animate-fadeDown"
+      >
+        {{ currentError }}
+      </div>
     </div>
 
     <!-- Right Side (Opponent) -->
@@ -85,6 +91,17 @@
           <span>TOTAL VALUE</span>
           <span class="font-bold">{{ opponentTotalValue.toFixed(2) }} USD</span>
         </div>
+      </div>
+      <div
+        v-if="opponentBuyInput || opponentSellInput"
+        class="top-32 text-xl font-bold text-green-400 bg-black bg-opacity-50 px-4 py-2 rounded shadow-lg transition-opacity duration-700 ease-in-out animate-fadeDown"
+      >
+        <span v-if="opponentBuyInput"
+          >OPPONENT BOUGHT ${{ opponentBuyInput }}</span
+        >
+        <span v-else-if="opponentSellInput" class="text-red-400"
+          >OPPONENT SOLD ${{ opponentSellInput }}</span
+        >
       </div>
     </div>
 
@@ -232,6 +249,11 @@ export default defineComponent({
       sellInput: "",
       stockData: [] as Candle[],
       tickInterval: null as ReturnType<typeof setInterval> | null,
+
+      // Error Handling
+      errorQueue: [] as string[],
+      currentError: "",
+      isShowingError: false,
     };
   },
   computed: {
@@ -368,12 +390,12 @@ export default defineComponent({
             this.opponentBuyInput = inputValue;
             setTimeout(() => {
               this.opponentBuyInput = "";
-            }, 2000);
+            }, 2500);
           } else if (type === "sell" && inputValue) {
             this.opponentSellInput = inputValue;
             setTimeout(() => {
               this.opponentSellInput = "";
-            }, 2000);
+            }, 2500);
           }
         }
       );
@@ -435,7 +457,6 @@ export default defineComponent({
         "sell-event",
         ({ userId, amount }: { userId: number; amount: number }) => {
           if (userId === myUserId) return;
-          const sharesSold = amount / this.currentPrice;
           this.opponentCash += amount;
           this.opponentUserId = userId;
         }
@@ -463,6 +484,11 @@ export default defineComponent({
       const amount = parseFloat(this.buyInput);
       if (isNaN(amount) || amount <= 0) return;
 
+      if (amount > this.playerCash) {
+        this.enqueueError("INSUFFICIENT FUNDS TO BUY.");
+        return;
+      }
+
       this.socket?.emit("buy", { matchId: this.$route.params.id, amount });
       this.buyInput = "";
     },
@@ -473,8 +499,39 @@ export default defineComponent({
       const amount = parseFloat(this.sellInput);
       if (isNaN(amount) || amount <= 0) return;
 
+      const sharesToSell = amount / this.currentPrice;
+      if (sharesToSell > this.playerShares) {
+        this.enqueueError("INSUFFICIENT SHARES TO SELL.");
+        return;
+      }
+
       this.socket?.emit("sell", { matchId: this.$route.params.id, amount });
       this.sellInput = "";
+    },
+
+    enqueueError(message: string) {
+      this.errorQueue.push(message);
+      if (!this.isShowingError) {
+        this.showNextError();
+      }
+    },
+
+    showNextError() {
+      if (this.errorQueue.length === 0) {
+        this.isShowingError = false;
+        this.currentError = "";
+        return;
+      }
+
+      this.isShowingError = true;
+      this.currentError = this.errorQueue.shift() || "";
+
+      setTimeout(() => {
+        this.currentError = "";
+        setTimeout(() => {
+          this.showNextError();
+        }, 100); // wait for fade-out to complete before showing next
+      }, 2500);
     },
 
     goHome() {
