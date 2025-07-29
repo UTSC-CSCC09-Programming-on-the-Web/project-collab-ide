@@ -1,11 +1,11 @@
 <template>
   <button
     type="submit"
-    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
+    class="bg-[#1998e1] hover:bg-blue-700 text-white ml-2 font-semibold text-lg"
     :disabled="loading"
     @click="handleSubscribe"
   >
-    {{ loading ? "Loading checkout page..." : "Continue to payment" }}
+    {{ loading ? "REDIRECTING TO CHECKOUT PAGE..." : "CONTINUE TO PAYMENT" }}
   </button>
 </template>
 
