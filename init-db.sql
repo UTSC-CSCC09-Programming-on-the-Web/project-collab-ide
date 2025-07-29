@@ -1,0 +1,34 @@
+SELECT 'CREATE DATABASE stockshowdown'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'stockshowdown')\gexec
+
+\c stockshowdown;
+
+CREATE TABLE IF NOT EXISTS "Users" (
+    id SERIAL PRIMARY KEY,
+    "googleId" TEXT UNIQUE NOT NULL,
+    email TEXT NOT NULL,
+    username TEXT NOT NULL,
+    "isSubscribed" BOOLEAN DEFAULT false,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS "MarketCandles" (
+    id SERIAL PRIMARY KEY,
+    ticker TEXT NOT NULL,
+    date DATE NOT NULL,
+    timestamp TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    open DOUBLE PRECISION NOT NULL,
+    high DOUBLE PRECISION NOT NULL,
+    low DOUBLE PRECISION NOT NULL,
+    close DOUBLE PRECISION NOT NULL,
+    volume DOUBLE PRECISION NOT NULL,
+    market TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS "MarketFacts" (
+    id SERIAL PRIMARY KEY,
+    date DATE NOT NULL,
+    title TEXT NOT NULL,
+    blurb TEXT NOT NULL
+);

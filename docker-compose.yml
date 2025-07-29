@@ -18,7 +18,14 @@ services:
       postgres:
         condition: service_healthy
     command: >
-      sh -c "python3 seed_data/seed_postgres.py && npm run start"
+      sh -c "
+        echo 'Waiting for database to be ready...' &&
+        sleep 10 &&
+        echo 'Running database seeding...' &&
+        python3 seed_data/seed_postgres.py &&
+        echo 'Starting Node.js server...' &&
+        npm run start
+      "
 
   postgres:
     image: postgres:15
@@ -29,13 +36,14 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     ports:
       - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
 volumes:
   pgdata:
