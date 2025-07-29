@@ -46,7 +46,7 @@ app.use(cookieParser());
 app.use(
   csurf({
     cookie: {
-      httpOnly: true,
+      httpOnly: process.env.NODE_ENV === "production",
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
     },
