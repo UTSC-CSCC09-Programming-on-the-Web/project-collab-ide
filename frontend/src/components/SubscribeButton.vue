@@ -1,11 +1,11 @@
 <template>
   <button
     type="submit"
-    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
+    class="bg-[#1998e1] hover:bg-blue-700 text-white ml-2 font-semibold text-lg"
     :disabled="loading"
     @click="handleSubscribe"
   >
-    {{ loading ? "Loading checkout page..." : "Continue to payment" }}
+    {{ loading ? "REDIRECTING TO CHECKOUT PAGE..." : "CONTINUE TO PAYMENT" }}
   </button>
 </template>
 
@@ -28,7 +28,7 @@ const handleSubscribe = async () => {
 
   try {
     const response = await fetch(
-      "http://localhost:3000/stripe/create-checkout-session",
+      `${process.env.VUE_APP_BACKEND_URL}/stripe/create-checkout-session`,
       {
         method: "POST",
         credentials: "include",
@@ -36,7 +36,7 @@ const handleSubscribe = async () => {
           "Content-Type": "application/json",
           "CSRF-Token": csrfStore.token,
         },
-      },
+      }
     );
 
     const data = await response.json();

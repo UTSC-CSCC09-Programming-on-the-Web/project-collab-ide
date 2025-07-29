@@ -5,6 +5,10 @@
   </div>
 </template>
 
+<script setup>
+import SubscribeButton from "../components/SubscribeButton.vue";
+</script>
+
 <style scoped>
 .title {
   font-family: "Bebas Neue", sans-serif;
@@ -12,7 +16,3 @@
   color: #1998e1;
 }
 </style>
-
-<script setup>
-import SubscribeButton from "../components/SubscribeButton.vue";
-</script>
