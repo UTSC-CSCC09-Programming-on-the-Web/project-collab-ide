@@ -214,7 +214,6 @@ import axios from "axios";
 import { io, Socket } from "socket.io-client";
 import StockDisplay from "@/components/StockDisplay.vue";
 import { useUserStore } from "@/stores/user";
-import { MATCH_DURATION } from "../../constants";
 
 export default defineComponent({
   components: { StockDisplay },
@@ -224,7 +223,7 @@ export default defineComponent({
       socket: null as Socket | null,
 
       // Timer & Match State
-      timeRemaining: MATCH_DURATION,
+      timeRemaining: process.env.MATCH_DURATION || 180,
       isMatchActive: false,
       isMatchEnded: false,
       playersInMatch: 0,
@@ -549,7 +548,7 @@ export default defineComponent({
               ticker: ticker,
               date: marketDate,
               page: 0,
-              limit: MATCH_DURATION,
+              limit: process.env.MATCH_DURATION || 180,
             },
             withCredentials: true,
           }

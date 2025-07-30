@@ -1,5 +1,4 @@
 import { Match } from "../models/match.js";
-import { MATCH_DURATION } from "../utils/constants.js";
 
 class MatchService {
   constructor() {
@@ -98,7 +97,7 @@ class MatchService {
     const match = {
       id: matchId,
       startTime: Date.now(),
-      duration: MATCH_DURATION * 1000,
+      duration: (process.env.MATCH_DURATION || 180) * 1000,
       interval: null,
     };
 
@@ -107,7 +106,7 @@ class MatchService {
 
     // Immediately emit 3:00 timer
     io.to(`match-${matchId}`).emit("timer-update", {
-      timeRemaining: MATCH_DURATION,
+      timeRemaining: process.env.MATCH_DURATION || 180,
     });
 
     // Start ticking every second
