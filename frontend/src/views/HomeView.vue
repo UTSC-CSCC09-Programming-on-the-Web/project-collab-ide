@@ -41,15 +41,15 @@
                 : "TIE"
             }}
           </p>
-          <div v-if="match.market" class="flex items-center text-sm">
+          <div v-if="match.stockTicker" class="flex items-center text-sm text-black">
             <span class="font-semibold mr-2">STOCK:</span>
-            <span class="font-reg">{{ match.ticker || "" }}</span>
+            <span class="font-reg">{{ match.stockTicker || "" }}</span>
           </div>
-          <div v-if="match.marketDate" class="flex items-center text-sm">
+          <div v-if="match.marketDate" class="flex items-center text-sm text-black mb-0.5">
             <span class="font-semibold mr-2">STOCK DATE:</span>
             <span class="font-reg">{{ match.marketDate || "" }}</span>
           </div>
-          <div class="inline-block bg-[#3AD47F] rounded-lg px-2.5 py-0.5">
+          <div class="inline-block bg-[#3AD47F] rounded-lg px-2.5 py-0.5 mt-1">
             <div
               class="flex items-center text-xs sm:text-base md:text-md text-black"
             >
