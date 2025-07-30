@@ -35,9 +35,10 @@ class MatchService {
     return matchData ? matchData.players.get(playerId) : null;
   }
 
-  updateStockTicker(matchId, stockTicker) {
+  updateMarketComboData(matchId, marketCombo) {
     const matchData = this.matchData.get(matchId);
-    matchData.stockTicker = stockTicker;
+    matchData.stockTicker = marketCombo.stockTicker;
+    matchData.marketDate = marketCombo.marketDate;
 
     return {
       success: true,
@@ -205,7 +206,6 @@ class MatchService {
       const STARTING_AMOUNT = 100.0;
       const player1 = players[0];
       const player2 = players[1];
-      const stock = matchData.stockTicker;
 
       // Calculate payouts
       const player1FinalValue = player1.cash + player1.shares * currentPrice;
@@ -232,7 +232,8 @@ class MatchService {
           loserId,
           player1Payout: Math.round(player1Payout * 100) / 100,
           player2Payout: Math.round(player2Payout * 100) / 100,
-          stockTicker: stock,
+          stockTicker: matchData.stockTicker,
+          marketDate: matchData.marketDate
         },
         {
           where: { id: matchId },

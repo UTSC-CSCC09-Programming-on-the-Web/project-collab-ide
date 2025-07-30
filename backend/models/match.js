@@ -51,4 +51,9 @@ export const Match = sequelize.define("Match", {
     defaultValue: "AAPL",
     allowNull: false,
   },
+  marketDate: {
+      type: DataTypes.DATEONLY,
+      defaultValue: "2024-01-01",
+      allowNull: false,
+    },
 });
