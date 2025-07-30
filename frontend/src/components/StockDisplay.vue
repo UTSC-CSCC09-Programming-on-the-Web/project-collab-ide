@@ -2,7 +2,7 @@
   <div class="bg-white rounded-lg p-4 shadow-md text-center w-48">
     <div class="text-xs text-gray-500">{{ exchange }}: {{ ticker }}</div>
     <div class="text-3xl font-bold text-gray-800">
-      {{ price === -1 ? '-' : price.toFixed(2) }}
+      {{ price === -1 ? "-" : price.toFixed(2) }}
       <span class="text-sm text-gray-500">USD</span>
     </div>
     <div
