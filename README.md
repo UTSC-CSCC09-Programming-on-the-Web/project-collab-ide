@@ -1,4 +1,6 @@
 # **Stock Showdown**
+### Website URL
+https://stockshowdown.duckdns.org/
 ### Video Demo
 [https://www.youtube.com/watch?v=oNxPCv_ZGK0](https://www.youtube.com/watch?v=oNxPCv_ZGK0)
 
