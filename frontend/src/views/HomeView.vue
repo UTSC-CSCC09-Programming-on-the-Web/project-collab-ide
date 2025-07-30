@@ -53,7 +53,13 @@
             class="flex items-center text-sm text-black mb-0.5"
           >
             <span class="font-semibold mr-2">STOCK DATE:</span>
-            <span class="font-reg">{{ match.marketDate || "" }}</span>
+            <span class="font-reg">{{
+              new Intl.DateTimeFormat("en-US", {
+                year: "2-digit",
+                month: "2-digit",
+                day: "2-digit",
+              }).format(new Date(match.marketDate)) || ""
+            }}</span>
           </div>
           <div class="inline-block bg-[#3AD47F] rounded-lg px-2.5 py-0.5 mt-1">
             <div
