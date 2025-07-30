@@ -233,7 +233,7 @@ class MatchService {
           player1Payout: Math.round(player1Payout * 100) / 100,
           player2Payout: Math.round(player2Payout * 100) / 100,
           stockTicker: matchData.stockTicker,
-          marketDate: matchData.marketDate
+          marketDate: matchData.marketDate,
         },
         {
           where: { id: matchId },

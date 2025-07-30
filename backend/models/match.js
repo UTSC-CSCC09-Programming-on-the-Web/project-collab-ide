@@ -52,8 +52,8 @@ export const Match = sequelize.define("Match", {
     allowNull: false,
   },
   marketDate: {
-      type: DataTypes.DATEONLY,
-      defaultValue: "2024-01-01",
-      allowNull: false,
-    },
+    type: DataTypes.DATEONLY,
+    defaultValue: "2024-01-01",
+    allowNull: false,
+  },
 });
