@@ -24,6 +24,7 @@
             :class="{
               'text-green-600': match.winnerId === userStore.user?.id,
               'text-red-600': match.loserId === userStore.user?.id,
+              'text-yellow-600': match.winnerId === null
             }"
           >
             {{
