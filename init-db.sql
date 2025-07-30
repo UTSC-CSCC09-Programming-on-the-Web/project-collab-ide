@@ -25,10 +25,3 @@ CREATE TABLE IF NOT EXISTS "MarketCandles" (
     volume DOUBLE PRECISION NOT NULL,
     market TEXT NOT NULL
 );
-
-CREATE TABLE IF NOT EXISTS "MarketFacts" (
-    id SERIAL PRIMARY KEY,
-    date DATE NOT NULL,
-    title TEXT NOT NULL,
-    blurb TEXT NOT NULL
-);

@@ -46,11 +46,7 @@ def check_if_data_exists(cur):
     """Check if data already exists to avoid re-seeding"""
     cur.execute('SELECT COUNT(*) FROM "MarketCandles"')
     candles_count = cur.fetchone()[0]
-    
-    cur.execute('SELECT COUNT(*) FROM "MarketFacts"')
-    facts_count = cur.fetchone()[0]
-    
-    return candles_count > 0 or facts_count > 0
+    return candles_count > 0
 
 def drop_and_create_tables(cur, conn):
     # Drop tables (seems to persist after docker down)
