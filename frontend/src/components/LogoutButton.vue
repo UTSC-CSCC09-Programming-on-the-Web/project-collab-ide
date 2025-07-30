@@ -12,10 +12,12 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/user";
+import { useCsrfStore } from "@/stores/csrf";
 
 const loading = ref(false);
 const router = useRouter();
 const userStore = useUserStore();
+const csrfStore = useCsrfStore();
 
 async function handleLogout() {
   loading.value = true;
@@ -23,6 +25,9 @@ async function handleLogout() {
     await fetch(`${process.env.VUE_APP_BACKEND_URL}/api/auth/logout`, {
       method: "POST",
       credentials: "include",
+      headers: {
+        "CSRF-Token": csrfStore.token,
+      },
     });
     userStore.clearUser();
     router.push("/");

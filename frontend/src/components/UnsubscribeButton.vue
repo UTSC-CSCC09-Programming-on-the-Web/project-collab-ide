@@ -12,10 +12,12 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/user";
+import { useCsrfStore } from "@/stores/csrf";
 
 const loading = ref(false);
 const router = useRouter();
 const userStore = useUserStore();
+const csrfStore = useCsrfStore();
 
 async function handleUnsubscribe() {
   loading.value = true;
@@ -25,7 +27,10 @@ async function handleUnsubscribe() {
       {
         method: "POST",
         credentials: "include",
-      },
+        headers: {
+          "CSRF-Token": csrfStore.token,
+        },
+      }
     );
 
     if (!unsubscribeRes.ok) {
@@ -37,7 +42,10 @@ async function handleUnsubscribe() {
       {
         method: "POST",
         credentials: "include",
-      },
+        headers: {
+          "CSRF-Token": csrfStore.token,
+        },
+      }
     );
 
     if (!logoutRes.ok) {

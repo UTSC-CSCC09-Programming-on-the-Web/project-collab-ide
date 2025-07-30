@@ -1,11 +1,11 @@
 <template>
   <button
     type="submit"
-    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
+    class="bg-[#1998e1] hover:bg-blue-700 text-white ml-2 font-semibold text-lg"
     :disabled="loading"
     @click="handleSubscribe"
   >
-    {{ loading ? "Loading checkout page..." : "Continue to payment" }}
+    {{ loading ? "REDIRECTING TO CHECKOUT PAGE..." : "CONTINUE TO PAYMENT" }}
   </button>
 </template>
 
@@ -13,9 +13,11 @@
 import { ref } from "vue";
 import { computed } from "vue";
 import { useUserStore } from "@/stores/user";
+import { useCsrfStore } from "@/stores/csrf";
 
 const loading = ref(false);
 const userStore = useUserStore();
+const csrfStore = useCsrfStore();
 const email = computed(() => userStore.user?.email || "");
 
 const handleSubscribe = async () => {
@@ -29,9 +31,12 @@ const handleSubscribe = async () => {
       `${process.env.VUE_APP_BACKEND_URL}/stripe/create-checkout-session`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.value }),
-      },
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "CSRF-Token": csrfStore.token,
+        },
+      }
     );
 
     const data = await response.json();

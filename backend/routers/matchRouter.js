@@ -62,3 +62,22 @@ matchRouter.get("/:id/status", isAuthenticated, async (req, res) => {
     res.status(500).json({ error: "Failed to get match status" });
   }
 });
+
+matchRouter.get("/history", isAuthenticated, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const matches = await Match.findAll({
+      where: {
+        [Sequelize.Op.or]: [{ player1Id: userId }, { player2Id: userId }],
+        status: "finished",
+      },
+      order: [["startTime", "DESC"]],
+    });
+
+    res.json({ matches });
+  } catch (error) {
+    console.error("Error fetching match history:", error);
+    res.status(500).json({ error: "Failed to retrieve match history." });
+  }
+});
