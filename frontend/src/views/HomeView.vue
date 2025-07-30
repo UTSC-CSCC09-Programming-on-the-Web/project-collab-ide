@@ -65,9 +65,7 @@
             <div
               class="flex items-center text-xs sm:text-base md:text-md text-black"
             >
-              <span class="font-semibold hidden md:block mr-2"
-                >YOUR PORTFOLIO VALUE:
-              </span>
+              <span class="font-semibold mr-2">YOUR PORTFOLIO VALUE: </span>
               <span class="font-reg"
                 >${{
                   (
