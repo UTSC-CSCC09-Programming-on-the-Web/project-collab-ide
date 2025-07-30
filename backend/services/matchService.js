@@ -37,7 +37,7 @@ class MatchService {
 
   updateMarketComboData(matchId, marketCombo) {
     const matchData = this.matchData.get(matchId);
-    matchData.stockTicker = marketCombo.stockTicker;
+    matchData.stockTicker = marketCombo.ticker;
     matchData.marketDate = marketCombo.marketDate;
 
     return {
