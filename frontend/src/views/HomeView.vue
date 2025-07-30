@@ -26,7 +26,13 @@
               'text-red-600': match.loserId === userStore.user?.id,
             }"
           >
-            {{ match.winnerId === userStore.user?.id ? "WIN" : "LOSS" }}
+            {{
+              match.winnerId === userStore.user?.id
+                ? "WIN"
+                : match.loserId === userStore.user?.id
+                ? "LOSS"
+                : "TIE"
+            }}
           </p>
           <p class="text-sm">STOCK: {{ match.stockTicker || "AAPL" }}</p>
           <p class="text-sm">
