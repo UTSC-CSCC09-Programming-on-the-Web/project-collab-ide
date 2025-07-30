@@ -28,13 +28,14 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: process.env.FRONTEND_URL || "https://stockshowdown.duckdns.org",
     credentials: true,
   },
 });
 
 const PORT = process.env.PORT || 3000;
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:8080";
+const FRONTEND_URL =
+  process.env.FRONTEND_URL || "https://stockshowdown.duckdns.org";
 
 if (!fs.existsSync("uploads")) {
   fs.mkdirSync("uploads");
@@ -264,5 +265,5 @@ try {
 }
 
 server.listen(PORT, () => {
-  console.log(`Server listening at http://localhost:${PORT}`);
+  console.log(`Server listening at https://stockshowdown.duckdns.org`);
 });

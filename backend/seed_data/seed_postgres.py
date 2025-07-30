@@ -2,7 +2,7 @@ import os
 import psycopg2
 import csv
 
-PG_HOST = os.environ.get("POSTGRES_HOST", "localhost")
+PG_HOST = os.environ.get("POSTGRES_HOST", "postgres")
 PG_PORT = os.environ.get("POSTGRES_PORT", "5432")
 PG_DB = os.environ.get("POSTGRES_DB", "stockshowdown")
 PG_USER = os.environ.get("POSTGRES_USER", "postgres")
@@ -20,7 +20,7 @@ def get_conn():
     )
 
 def drop_and_create_tables(cur, conn):
-    # Drop tables (seems to persist after docke rdown)
+    # Drop tables (seems to persist after docker down)
     cur.execute("""DROP TABLE IF EXISTS "MarketCandles";""")
 
     # Create tables
