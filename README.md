@@ -1,4 +1,8 @@
 # **Stock Showdown**
+### Video Demo
+[https://www.youtube.com/watch?v=oNxPCv_ZGK0](https://www.youtube.com/watch?v=oNxPCv_ZGK0)
+
+[![Stock Showdown Demo Image Link](https://img.youtube.com/vi/oNxPCv_ZGK0/0.jpg)](https://www.youtube.com/watch?v=oNxPCv_ZGK0)
 
 ### The Players
 
