@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS "Users" (
     email TEXT NOT NULL,
     username TEXT NOT NULL,
     "isSubscribed" BOOLEAN DEFAULT false,
+    "stripeSubId" TEXT,
     "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
