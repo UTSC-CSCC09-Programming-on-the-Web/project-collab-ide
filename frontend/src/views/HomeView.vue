@@ -13,14 +13,20 @@
       >
         You have no match history yet.
       </div>
-      <ul v-else class="space-y-3">
+      <ul
+        v-else
+        class="space-y-3 text-left overflow-y-auto max-h-[60vh] pr-2 inline-block"
+      >
         <li
           v-for="match in matchHistory"
           :key="match.id"
-          class="border p-4 rounded-lg shadow-md bg-gray-100"
+          class="p-4 rounded-lg bg-[#E9E9E9]"
         >
+          <p class="text-xs font-semibold text-black">
+            {{ new Date(match.startTime).toLocaleString() }}
+          </p>
           <p
-            class="text-lg font-bold"
+            class="text-3xl font-bebas"
             :class="{
               'text-green-600': match.winnerId === userStore.user?.id,
               'text-red-600': match.loserId === userStore.user?.id,
@@ -35,18 +41,32 @@
                 : "TIE"
             }}
           </p>
-          <p class="text-sm">STOCK: {{ match.stockTicker || "AAPL" }}</p>
-          <p class="text-sm">
-            TIME: {{ new Date(match.startTime).toLocaleString() }}
-          </p>
-          <p class="text-sm text-green-600 font-semibold">
-            YOUR PAYOUT:
-            {{
-              match.player1Id === userStore.user?.id
-                ? match.player1Payout
-                : match.player2Payout
-            }}
-          </p>
+          <div v-if="match.market" class="flex items-center text-sm">
+            <span class="font-semibold mr-2">STOCK:</span>
+            <span class="font-reg">{{ match.ticker || "" }}</span>
+          </div>
+          <div v-if="match.marketDate" class="flex items-center text-sm">
+            <span class="font-semibold mr-2">STOCK DATE:</span>
+            <span class="font-reg">{{ match.marketDate || "" }}</span>
+          </div>
+          <div class="inline-block bg-[#3AD47F] rounded-lg px-2.5 py-0.5">
+            <div
+              class="flex items-center text-xs sm:text-base md:text-md text-black"
+            >
+              <span class="font-semibold mr-2">YOUR PORTFOLIO VALUE: </span>
+              <span class="font-reg"
+                >${{
+                  (
+                    Number(
+                      match.player1Id === userStore.user?.id
+                        ? match.player1Payout
+                        : match.player2Payout
+                    ) + 100
+                  ).toFixed(2)
+                }}</span
+              >
+            </div>
+          </div>
         </li>
       </ul>
     </div>
@@ -81,6 +101,7 @@
       </div>
 
       <button
+        :style="{ backgroundColor: inQueue ? '#A1C4D8' : '#1998E1' }"
         class="join-queue-btn font-semibold text-white"
         :disabled="inQueue"
         @click="joinQueue"
@@ -212,6 +233,7 @@ export default defineComponent({
           { withCredentials: true }
         );
         this.matchHistory = res.data.matches;
+        console.log("Match history loaded:", this.matchHistory);
       } catch (err: any) {
         console.error("Failed to load match history", err.message);
       }
@@ -234,7 +256,6 @@ export default defineComponent({
   font-family: "Roboto Condensed", sans-serif;
   padding: 0.5rem;
   border-radius: 0.7rem;
-  background-color: #1998e1;
   width: 20vw;
   color: white;
 }
