@@ -223,7 +223,7 @@ export default defineComponent({
       socket: null as Socket | null,
 
       // Timer & Match State
-      timeRemaining: 180,
+      timeRemaining: process.env.MATCH_DURATION || 180,
       isMatchActive: false,
       isMatchEnded: false,
       playersInMatch: 0,
@@ -242,7 +242,7 @@ export default defineComponent({
       // Stock Data
       exchange: "NASDAQ",
       ticker: "AAPL",
-      currentPrice: 179.76,
+      currentPrice: -1,
       priceChange: 2.85,
       percentChange: 1.61,
       buyInput: "",
@@ -548,7 +548,7 @@ export default defineComponent({
               ticker: ticker,
               date: marketDate,
               page: 0,
-              limit: 180,
+              limit: process.env.MATCH_DURATION || 180,
             },
             withCredentials: true,
           }

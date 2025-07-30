@@ -12,7 +12,7 @@ class MatchService {
     if (!matchData) {
       matchData = {
         players: new Map(),
-        currentPrice: 179.76,
+        currentPrice: -1,
         stockTicker: "AAPL",
         trades: [],
       };
@@ -33,6 +33,16 @@ class MatchService {
   getPlayerData(matchId, playerId) {
     const matchData = this.matchData.get(matchId);
     return matchData ? matchData.players.get(playerId) : null;
+  }
+
+  updateMarketComboData(matchId, marketCombo) {
+    const matchData = this.matchData.get(matchId);
+    matchData.stockTicker = marketCombo.ticker;
+    matchData.marketDate = marketCombo.marketDate;
+
+    return {
+      success: true,
+    };
   }
 
   processBuy(matchId, playerId, amount) {
@@ -88,7 +98,7 @@ class MatchService {
     const match = {
       id: matchId,
       startTime: Date.now(),
-      duration: 3 * 60 * 1000,
+      duration: (process.env.MATCH_DURATION || 180) * 1000,
       interval: null,
     };
 
@@ -97,13 +107,12 @@ class MatchService {
 
     // Immediately emit 3:00 timer
     io.to(`match-${matchId}`).emit("timer-update", {
-      timeRemaining: 180,
+      timeRemaining: process.env.MATCH_DURATION || 180,
     });
 
     // Start ticking every second
     match.interval = setInterval(() => {
       const timeRemaining = this.getTimeRemaining(matchId);
-
       // Broadcast timer update to all players in the match
       io.to(`match-${matchId}`).emit("timer-update", {
         timeRemaining: Math.max(0, Math.floor(timeRemaining / 1000)),
@@ -223,6 +232,8 @@ class MatchService {
           loserId,
           player1Payout: Math.round(player1Payout * 100) / 100,
           player2Payout: Math.round(player2Payout * 100) / 100,
+          stockTicker: matchData.stockTicker,
+          marketDate: matchData.marketDate,
         },
         {
           where: { id: matchId },
