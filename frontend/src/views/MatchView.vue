@@ -243,7 +243,7 @@ export default defineComponent({
       // Stock Data
       exchange: "NASDAQ",
       ticker: "AAPL",
-      currentPrice: 179.76,
+      currentPrice: -1,
       priceChange: 2.85,
       percentChange: 1.61,
       buyInput: "",

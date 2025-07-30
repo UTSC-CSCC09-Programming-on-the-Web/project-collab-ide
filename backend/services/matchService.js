@@ -13,7 +13,7 @@ class MatchService {
     if (!matchData) {
       matchData = {
         players: new Map(),
-        currentPrice: 179.76,
+        currentPrice: -1,
         stockTicker: "AAPL",
         trades: [],
       };
