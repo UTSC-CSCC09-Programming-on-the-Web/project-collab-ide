@@ -24,7 +24,9 @@ jobs:
         run: npm install
       - name: Run Express Server
         run: node app.js &
-      - name: Sleep 2 seconds
-        run: sleep 2s
+        env:
+          JWT_SECRET: "secret"
+          STRIPE_SECRET_KEY: "secret"
+          STRIPE_WEBHOOK_SECRET: "secret"
       - name: curl index.html
         run: "curl --request GET http://localhost:3000/ --fail"

@@ -1,55 +1,12 @@
 import { Router } from "express";
-import { MarketFact } from "../models/marketFact.js";
 import { MarketCandle } from "../models/marketCandle.js";
 import { Sequelize } from "sequelize";
+import axios from "axios";
 
 export const marketRouter = Router();
 
 // TODO: use validation helpers to validate query params
-
-// GET /api/market/fact?date=YYYY-MM-DD
-// TODO: Remove this and other unused endpoints if we don't need to use
-// Currently a bit outdated but I can update this quickly if we end up needing it.
-marketRouter.get("/fact", async (req, res) => {
-  const { date } = req.query;
-  if (!date) {
-    return res
-      .status(400)
-      .json({ error: "Invalid query parameters: date is required." });
-  }
-  try {
-    const fact = await MarketFact.findOne({
-      where: { date },
-    });
-    if (!fact) {
-      return res
-        .status(404)
-        .json({ error: `No market fact found for ${date}.` });
-    }
-    res.json(fact);
-  } catch (err) {
-    console.error("[ERROR] /api/market/fact", err);
-    res.status(500).json({ error: "Internal server error." });
-  }
-});
-
-// GET /api/market/dates
-marketRouter.get("/dates", async (req, res) => {
-  try {
-    const dates = await MarketFact.findAll({
-      attributes: ["date"],
-      group: ["date"],
-      order: [["date", "DESC"]],
-    });
-
-    const dateList = dates.map((d) => d.date);
-
-    res.json({ total: dateList.length, dates: dateList });
-  } catch (err) {
-    console.error("[ERROR] /api/market/dates", err);
-    res.status(500).json({ error: "Failed to fetch market dates." });
-  }
-});
+// TODO: update endpoint to get data from live api and then fallback if error.
 
 // GET /api/market/stocks
 marketRouter.get("/stocks", async (req, res) => {
@@ -84,11 +41,52 @@ marketRouter.get("/candles", async (req, res) => {
   limit = parseInt(limit) || 60;
 
   try {
-    const candles = await getCandles({ market, ticker, date, page, limit });
-    res.json({ total: candles.length, candles });
+    const fallback = async () => {
+      const candles = await getCandles({ market, ticker, date, page, limit });
+      return res.json({ total: candles.length, candles });
+    };
+
+    const [year, month] = date.split("-");
+    const alphaUrl = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${ticker}&interval=5min&month=${year}-${month}&outputsize=full&apikey=${process.env.ALPHA_VANTAGE_API_KEY}`;
+
+    const alphaRes = await axios.get(alphaUrl);
+    const rawData = alphaRes.data["Time Series (5min)"];
+
+    if (!rawData) {
+      console.warn("AlphaVantage returned invalid format, using fallback.");
+      return fallback();
+    }
+
+    const filtered = Object.entries(rawData)
+      .filter(([timestamp]) => timestamp.startsWith(date))
+      .sort((a, b) => new Date(a[0]) - new Date(b[0]))
+      .slice(0, limit)
+      .map(([timestamp, ohlcv]) => ({
+        market: market.toUpperCase(),
+        ticker: ticker.toUpperCase(),
+        date,
+        timestamp,
+        open: parseFloat(ohlcv["1. open"]),
+        high: parseFloat(ohlcv["2. high"]),
+        low: parseFloat(ohlcv["3. low"]),
+        close: parseFloat(ohlcv["4. close"]),
+        volume: parseFloat(ohlcv["5. volume"]),
+      }));
+
+    if (filtered.length < limit) {
+      console.warn("AlphaVantage data insufficient, falling back to DB.");
+      return fallback();
+    }
+    return res.json({ total: filtered.length, candles: filtered });
   } catch (err) {
-    console.error("[ERROR] /api/market/candles", err);
-    res.status(500).json({ error: "Internal server error." });
+    console.error("[WARN] AlphaVantage failed, using fallback:", err.message);
+    try {
+      const candles = await getCandles({ market, ticker, date, page, limit });
+      return res.json({ total: candles.length, candles });
+    } catch (fallbackErr) {
+      console.error("[ERROR] /api/market/candles fallback", fallbackErr);
+      return res.status(500).json({ error: "Internal server error." });
+    }
   }
 });
 
@@ -97,7 +95,7 @@ const getCandles = async ({ market, ticker, date, page = 0, limit = 180 }) => {
 
   const candles = await MarketCandle.findAll({
     where: {
-      market: market.toUpperCase(),
+      market: market,
       ticker: ticker.toUpperCase(),
       date,
     },

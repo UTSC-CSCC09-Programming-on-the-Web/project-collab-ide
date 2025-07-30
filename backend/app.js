@@ -16,9 +16,11 @@ import { matchRouter } from "./routers/matchRouter.js";
 import { marketRouter, getRandomMarketCombo } from "./routers/marketRouter.js";
 import { matchService } from "./services/matchService.js";
 import jwt from "jsonwebtoken";
+import csurf from "csurf";
 
 import http from "http";
 import { Server } from "socket.io";
+import { stripWebhookRouter } from "./routers/stripeWebhookRouter.js";
 
 dotenv.config();
 
@@ -39,13 +41,28 @@ if (!fs.existsSync("uploads")) {
 }
 
 app.use(cors({ origin: `${FRONTEND_URL}`, credentials: true }));
+app.use("/webhook", stripWebhookRouter);
+app.use(cookieParser());
+app.use(
+  csurf({
+    cookie: {
+      httpOnly: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    },
+  }),
+);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(cookieParser());
 
-// TODO: check for mising secret key and remove the default secret (they remove marks :c)
+if (!process.env.JWT_SECRET) {
+  throw new Error(
+    "Missing JWT_SECRET environment variable. Set it in the backend .env file.",
+  );
+}
+
 const sessionMiddleware = session({
-  secret: process.env.SECRET_KEY || "secret",
+  secret: process.env.JWT_SECRET,
   resave: false,
   saveUninitialized: true,
 });
@@ -53,8 +70,6 @@ const sessionMiddleware = session({
 app.use(sessionMiddleware);
 
 io.use((socket, next) => {
-  // need to decode jwt
-  // TODO: move socket stuff to new file?
   sessionMiddleware(socket.request, {}, () => {
     const cookieHeader = socket.request.headers.cookie || "";
     const cookies = Object.fromEntries(
@@ -85,6 +100,10 @@ app.use("/api/users", userRouter);
 app.use("/api/queue", queueRouter);
 app.use("/api/match", matchRouter);
 app.use("/api/market", marketRouter);
+
+app.get("/csrf-token", (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
 
 const matchPlayers = new Map();
 io.on("connection", (socket) => {
@@ -160,6 +179,8 @@ io.on("connection", (socket) => {
               username: userInfo.username,
             });
           }
+
+          matchService.updateStockTicker(matchId, marketCombo.ticker);
 
           io.to(room).emit("match-started", {
             matchId,

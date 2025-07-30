@@ -46,4 +46,9 @@ export const Match = sequelize.define("Match", {
     defaultValue: 0.0,
     allowNull: false,
   },
+  stockTicker: {
+    type: DataTypes.STRING,
+    defaultValue: "AAPL",
+    allowNull: false,
+  },
 });
