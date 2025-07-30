@@ -36,7 +36,7 @@ const handleSubscribe = async () => {
           "Content-Type": "application/json",
           "CSRF-Token": csrfStore.token,
         },
-      }
+      },
     );
 
     const data = await response.json();

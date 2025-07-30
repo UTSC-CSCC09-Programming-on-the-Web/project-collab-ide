@@ -42,7 +42,9 @@ async function handleLogout() {
 <style scoped>
 .logout-btn {
   font-family: "Roboto Condensed", sans-serif;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
 }
 .logout-btn:hover {
   transform: translateY(-2px);

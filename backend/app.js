@@ -34,7 +34,8 @@ const io = new Server(server, {
 });
 
 const PORT = process.env.PORT || 3000;
-const FRONTEND_URL = process.env.FRONTEND_URL || "https://stockshowdown.duckdns.org";
+const FRONTEND_URL =
+  process.env.FRONTEND_URL || "https://stockshowdown.duckdns.org";
 
 if (!fs.existsSync("uploads")) {
   fs.mkdirSync("uploads");
