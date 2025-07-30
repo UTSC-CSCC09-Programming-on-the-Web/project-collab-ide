@@ -54,3 +54,5 @@ The final version will refine the UI experience for mid-match and post-match. Fo
 - Improve the stock price tick visuals to be more dynamic
 - Player’s 1v1 match history
 - Display match stats
+
+Deployed url: https://stockshowdown.duckdns.org
