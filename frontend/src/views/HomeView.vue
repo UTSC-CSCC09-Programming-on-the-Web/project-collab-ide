@@ -178,7 +178,7 @@ export default defineComponent({
       try {
         const res = await axios.get(
           `${process.env.VUE_APP_BACKEND_URL}/api/match/status`,
-          { withCredentials: true },
+          { withCredentials: true }
         );
         if (res.data.matchId) {
           this.matchId = res.data.matchId;
