@@ -180,6 +180,8 @@ io.on("connection", (socket) => {
             });
           }
 
+          matchService.updateStockTicker(matchId, marketCombo.ticker);
+
           io.to(room).emit("match-started", {
             matchId,
             hostUserId,
