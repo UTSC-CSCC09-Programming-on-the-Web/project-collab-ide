@@ -143,7 +143,7 @@ export default defineComponent({
             headers: {
               "CSRF-Token": this.csrfStore.token,
             },
-          },
+          }
         );
         this.inQueue = true;
         this.startPolling();
@@ -166,7 +166,7 @@ export default defineComponent({
             headers: {
               "CSRF-Token": this.csrfStore.token,
             },
-          },
+          }
         );
         this.inQueue = false;
         if (this.pollInterval) clearInterval(this.pollInterval);
@@ -178,7 +178,7 @@ export default defineComponent({
       try {
         const res = await axios.get(
           `${process.env.VUE_APP_BACKEND_URL}/api/match/status`,
-          { withCredentials: true },
+          { withCredentials: true }
         );
         if (res.data.matchId) {
           this.matchId = res.data.matchId;
@@ -202,7 +202,7 @@ export default defineComponent({
       try {
         const res = await axios.get(
           `${process.env.VUE_APP_BACKEND_URL}/api/match/history`,
-          { withCredentials: true },
+          { withCredentials: true }
         );
         this.matchHistory = res.data.matches;
       } catch (err: any) {
